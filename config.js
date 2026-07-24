@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.0 — config.js
+// Trekking v1.1 — config.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
@@ -9,7 +9,14 @@
 // (Worker Cloudflare + KV/D1) quando sarà pronta. In V1.0 resta
 // disattivata: tutti i dati restano sul dispositivo.
 
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
+
+// Percorso del file JSON con le escursioni demo, caricabile in modalità
+// APPEND dalle Impostazioni ("Carica escursioni di esempio").
+const DEMO_DATA_URL = './demo/trekking-demo-escursioni.json';
+
+// Durata dello splash screen d'ingresso (millisecondi).
+const SPLASH_DURATION_MS = 3000;
 
 // Passare a true quando il Worker sarà disponibile.
 const SYNC_ENABLED = false;

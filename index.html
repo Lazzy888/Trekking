@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.0 — Pianifica con il gruppo
+  Trekking v1.1 — Pianifica con il gruppo
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -14,13 +14,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
 <title>Trekking - Pianifica con il gruppo</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="assets/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#2e5339">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -28,6 +30,20 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- Splash screen d'ingresso (~3s, poi dissolvenza verso l'app) -->
+<div id="splashScreen" role="status" aria-label="Trekking, caricamento in corso">
+  <div class="splash-icon-wrap">
+    <img src="assets/icon-512.png" alt="Trekking" class="splash-icon">
+  </div>
+  <div class="splash-title">Trekking</div>
+  <div class="splash-sub">Pianifica con il gruppo</div>
+  <div class="splash-author">
+    © 2026 Lazzaro Serva - Centola<br>
+    <a href="http://www.graficaesiti.it/" target="_blank" rel="noopener">www.graficaesiti.it</a>
+  </div>
+  <div class="splash-loader"><span></span><span></span><span></span></div>
+</div>
 
 <!-- Banner aggiornamento -->
 <div id="updateBanner" role="status" aria-live="polite">
@@ -78,7 +94,7 @@
         <div class="author-card-top">
           <div class="author-app-icon">🏔️</div>
           <div class="author-app-info">
-            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.0</span></div>
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.1</span></div>
             <div class="author-app-sub">Produzione Software — luglio 2026</div>
           </div>
         </div>
@@ -95,25 +111,113 @@
 
       <div class="help-section">
         <h3>🥾 Percorsi e Itinerari</h3>
-        <p>Crea una nuova escursione con partenza, arrivo, difficoltà e dislivello.
-        Puoi importare una traccia GPX per vedere il percorso sulla mappa e calcolare
-        automaticamente lunghezza e dislivelli. Condividi l'escursione con il gruppo
-        tramite il pulsante "Condividi".</p>
+        <p>Tocca "+ Nuova escursione" per creare un percorso: nome, partenza,
+        arrivo, data, durata stimata, difficoltà (scala T/E/EE/EEA), dislivelli
+        e quota massima. Questi ultimi due dati alimentano anche la checklist
+        intelligente in "Attrezzatura".</p>
+        <p><strong>Importare una traccia GPX</strong> — dalla scheda dell'escursione
+        tocca "📥 Importa GPX" e seleziona un file <code>.gpx</code> esportato da
+        un'altra app (es. app CAI, Komoot, Wikiloc, orologio GPS). L'app legge i
+        punti traccia (<code>trkpt</code>) e calcola automaticamente lunghezza,
+        dislivello positivo/negativo e quota massima, oltre a disegnare il
+        percorso sulla mappa interattiva.</p>
+        <p><strong>Mappa interattiva</strong> — usa i layer OpenStreetMap; le
+        tile delle zone già visualizzate restano disponibili anche offline
+        grazie alla cache dedicata del Service Worker (si popola man mano che
+        esplori la mappa con connessione attiva).</p>
+        <p><strong>Rendi disponibile offline</strong> — traccia, dettagli e
+        checklist sono già salvati sul dispositivo non appena crei o modifichi
+        l'escursione: questo pulsante avvia anche il pre-caricamento delle tile
+        della mappa visibile.</p>
+        <p><strong>Condividi</strong> — usa la condivisione nativa del
+        dispositivo (WhatsApp, Telegram, SMS, email) per inviare i dettagli
+        essenziali dell'escursione al gruppo.</p>
       </div>
 
       <div class="help-section">
         <h3>🎒 Attrezzatura e Consigli</h3>
-        <p>La checklist si genera automaticamente in base alle caratteristiche del
-        percorso (quota, presenza di ferrate, disponibilità d'acqua). Spunta gli
-        oggetti già preparati e assegna l'equipaggiamento di gruppo ai singoli
-        partecipanti per evitare doppioni o dimenticanze.</p>
+        <p>La checklist si genera automaticamente alla creazione (o modifica)
+        dell'escursione, in base a:</p>
+        <ul>
+          <li><strong>Quota superiore a 2000m</strong> → aggiunge strato termico pesante, guanti, cappello/balaclava, ramponcini</li>
+          <li><strong>Tratti di ferrata/esposti</strong> → aggiunge kit da ferrata, imbrago, casco</li>
+          <li><strong>Assenza di fonti d'acqua sul percorso</strong> → aggiunge riserva idrica extra</li>
+        </ul>
+        <p>Ogni voce aggiunta per una regola specifica mostra il motivo (es.
+        "quota &gt;2000m") accanto al nome. Spunta gli oggetti già preparati:
+        lo stato si salva automaticamente. I consigli di sicurezza (norme CAI,
+        comportamento in montagna) sono richiamati in fondo alla stessa
+        schermata.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🧭 Equipaggiamento richiesto</h3>
+        <p>Le voci di categoria <strong>"Di gruppo — Condiviso"</strong> possono
+        essere assegnate a un partecipante tramite il menu a tendina accanto a
+        ciascun oggetto: in questo modo il gruppo vede subito "chi porta cosa"
+        ed evita doppioni o dimenticanze (es. due tende e nessun kit di primo
+        soccorso). L'assegnazione è visibile solo dopo aver aggiunto i
+        partecipanti nella sezione Gruppo.</p>
       </div>
 
       <div class="help-section">
         <h3>👥 Gruppo</h3>
-        <p>Aggiungi i partecipanti, assegna i ruoli (capogruppo, scopa, responsabile
-        sicurezza...) e imposta il punto di ritrovo. La bacheca avvisi e il pulsante
-        SOS sono disponibili anche con connessione assente o limitata.</p>
+        <p><strong>Partecipanti</strong> — aggiungi ogni persona con nome e
+        ruolo (capogruppo, capofila, scopa/chiudipista, responsabile sicurezza,
+        responsabile attrezzatura, membro). Lo stato di presenza (partecipa /
+        incerto / non può) è modificabile in ogni momento.</p>
+        <p><strong>Punto di ritrovo</strong> — luogo e orario, sempre visibili
+        anche offline.</p>
+        <p><strong>Bacheca avvisi</strong> — messaggi rapidi per il gruppo
+        (cambio orario, meteo, modifiche percorso). In questa versione la
+        bacheca resta locale sul singolo dispositivo: la sincronizzazione in
+        tempo reale tra i telefoni dei partecipanti arriverà con la
+        sincronizzazione cloud in una versione successiva.</p>
+        <p><strong>SOS</strong> — il pulsante "🆘 Invia posizione SOS" richiede
+        il permesso di geolocalizzazione al browser, poi apre l'app SMS con un
+        messaggio precompilato contenente le coordinate GPS (formato WGS84) e
+        un link Google Maps. Funziona anche con segnale cellulare debole,
+        perché l'SMS non richiede una connessione dati.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🖼️ Icone e splash screen</h3>
+        <p>L'icona dell'app (visibile su schermata Home, launcher e barra del
+        browser) è disponibile in più varianti per garantire una resa corretta
+        su tutti i dispositivi:</p>
+        <ul>
+          <li><strong>Icona "any"</strong> — con angoli arrotondati e ombra già
+          integrati, usata dove il sistema operativo non applica una propria
+          mascheratura.</li>
+          <li><strong>Icona "maskable"</strong> — disegno a piena tela, pensato
+          per essere ritagliato dal launcher Android nella forma che preferisce
+          (cerchio, squircle, ecc.) senza tagliare parti importanti del logo.</li>
+          <li><strong>Apple touch icon</strong> — versione quadrata piena
+          (senza trasparenza) come richiesto da iOS, che applica da sé angoli
+          arrotondati e ombra.</li>
+        </ul>
+        <p>All'avvio dell'app compare per circa 3 secondi uno <strong>splash
+        screen</strong> animato con l'icona in dissolvenza e i dati fissi
+        dell'autore, prima di mostrare la schermata principale.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🧪 Escursioni di esempio (demo)</h3>
+        <p>In Impostazioni → "🧭 Carica escursioni di esempio" aggiunge 3
+        escursioni dimostrative complete di tutte le parti (percorso con
+        traccia, partecipanti, checklist attrezzatura, avvisi in bacheca), utili
+        per provare subito l'app o per una presentazione. L'operazione è in
+        <strong>modalità append</strong>: aggiunge dati nuovi senza cancellare o
+        sovrascrivere le escursioni che hai già creato.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>💾 Backup ed esportazione</h3>
+        <p>"⬇️ Esporta dati" salva un file <code>.json</code> con tutte le tue
+        escursioni, partecipanti, equipaggiamento e bacheca: utile come backup
+        prima di cambiare dispositivo o svuotare la cache del browser.
+        "⬆️ Importa dati" carica un file esportato in precedenza, anch'esso in
+        modalità append (stesso comportamento della demo).</p>
       </div>
 
       <div class="help-section">
@@ -121,6 +225,7 @@
         <ul>
           <li><strong>Android (Chrome):</strong> tocca ⋮ → "Aggiungi a schermata Home" o "Installa app".</li>
           <li><strong>iPhone (Safari):</strong> tocca Condividi → "Aggiungi a Home".</li>
+          <li><strong>Desktop (Chrome/Edge):</strong> tocca l'icona di installazione nella barra degli indirizzi, oppure ⋮ → "Installa Trekking".</li>
         </ul>
       </div>
 
@@ -128,7 +233,32 @@
         <h3>🆕 Aggiornamenti automatici</h3>
         <p>Quando è disponibile una nuova versione, comparirà un banner in basso:
         tocca "Aggiorna" per applicarla. Se non lo tocchi, l'app continua a
-        funzionare con la versione già installata.</p>
+        funzionare con la versione già installata finché non la aggiorni tu.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>📡 Uso offline e limiti attuali</h3>
+        <ul>
+          <li>Percorsi, checklist, gruppo e bacheca funzionano sempre, anche senza rete.</li>
+          <li>Le tile della mappa sono disponibili offline solo per le zone già visualizzate almeno una volta con connessione attiva.</li>
+          <li>L'invio SOS via SMS richiede comunque copertura di rete cellulare (anche minima) per l'invio del messaggio.</li>
+          <li>In questa versione i dati non si sincronizzano automaticamente tra i dispositivi dei diversi partecipanti: usa "Condividi" o l'esportazione/importazione JSON per allinearli manualmente.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3>❓ Domande frequenti</h3>
+        <p><strong>Il file GPX non importa nulla di visibile.</strong> Verifica
+        che contenga punti <code>trkpt</code> con coordinate valide; alcuni
+        file esportati come "solo waypoint" non contengono una traccia
+        continua.</p>
+        <p><strong>Ho cancellato la cache e ho perso le mie escursioni.</strong>
+        Se avevi fatto un'esportazione JSON puoi ripristinarla da Impostazioni
+        → "Importa dati". Ricorda di esportare periodicamente come backup.</p>
+        <p><strong>Posso usare l'app con più gruppi/escursioni insieme?</strong>
+        Sì: puoi creare più escursioni e passare dall'una all'altra dai
+        riquadri nella sezione Percorsi; ognuna ha il proprio gruppo ed
+        equipaggiamento.</p>
       </div>
 
       <div class="help-section">
@@ -138,8 +268,8 @@
         informazione viene trasmessa a server esterni.</p>
         <ul>
           <li><strong>Nessun account, nessun login.</strong></li>
-          <li><strong>Nessuna connessione a server</strong> — funziona completamente offline.</li>
-          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS), mai salvata né trasmessa.</li>
+          <li><strong>Nessuna connessione a server</strong> — funziona completamente offline (a parte le tile mappa e l'eventuale invio SMS).</li>
+          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS), mai salvata né trasmessa se non nell'SMS che invii tu stesso.</li>
           <li>Cancellare la cache del browser rimuove anche tutti i dati dell'app: usa "Esporta dati" prima di farlo.</li>
         </ul>
         <p style="font-size:14px;color:var(--text2);">

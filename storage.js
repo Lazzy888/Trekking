@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.0 — storage.js (livello di persistenza)
+// Trekking v1.1 — storage.js (livello di persistenza)
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/

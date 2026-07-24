@@ -1,17 +1,20 @@
 // ============================================================
-// Trekking v1.0 — service-worker.js
+// Trekking v1.1 — service-worker.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 
-const CACHE_NAME = 'trekking-v1.0';
-const TILE_CACHE_NAME = 'trekking-tiles-v1.0';
+const CACHE_NAME = 'trekking-v1.1';
+const TILE_CACHE_NAME = 'trekking-tiles-v1.1';
 
 const ASSETS = [
   './', './index.html', './manifest.json',
   './style.css', './config.js', './storage.js', './app.js',
   './assets/icon-192.png', './assets/icon-512.png',
+  './assets/icon-192-maskable.png', './assets/icon-512-maskable.png',
+  './assets/apple-touch-icon.png', './assets/favicon.ico', './assets/favicon-64.png',
+  './demo/trekking-demo-escursioni.json',
 ];
 
 // ── Installazione: NON chiamare skipWaiting() qui. ──

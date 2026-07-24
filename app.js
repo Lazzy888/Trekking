@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.0 — app.js
+// Trekking v1.1 — app.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -595,6 +595,8 @@ function renderImpostazioni(main) {
       <button class="btn-secondary" id="btnEsporta">⬇️ Esporta dati (JSON)</button>
       <button class="btn-secondary" id="btnImporta">⬆️ Importa dati (JSON)</button>
       <input type="file" id="importFile" accept="application/json" style="display:none">
+      <button class="btn-secondary" id="btnDemo">🧭 Carica escursioni di esempio (demo)</button>
+      <p class="hint-sync">Aggiunge 3 escursioni dimostrative complete (percorsi, gruppo, equipaggiamento, avvisi) in modalità append, senza toccare i tuoi dati esistenti.</p>
     </div>
 
     <div class="settings-block">
@@ -629,6 +631,21 @@ function renderImpostazioni(main) {
     const a = Object.assign(document.createElement('a'), { href: url, download: `trekking-backup-${Date.now()}.json` });
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  });
+  $('#btnDemo').addEventListener('click', async () => {
+    if (!confirm('Aggiungere 3 escursioni di esempio ai tuoi dati? I dati esistenti non verranno toccati.')) return;
+    try {
+      const res = await fetch(DEMO_DATA_URL);
+      if (!res.ok) throw new Error('File demo non trovato.');
+      const json = await res.json();
+      await importAllData(json);
+      state.escursioni = await dbGetAll(STORES.escursioni);
+      await refreshEscursioneCorrelati();
+      alert('Escursioni di esempio aggiunte. Le trovi nella sezione Percorsi.');
+      render();
+    } catch (err) {
+      alert('Impossibile caricare i dati demo: ' + err.message);
+    }
   });
   $('#btnImporta').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', async (e) => {
@@ -680,8 +697,21 @@ function bindGlobalUI() {
   $('#helpBtn').addEventListener('click', apriManuale);
 }
 
+// ── Splash screen d'ingresso ──
+function gestisciSplash() {
+  const splash = document.getElementById('splashScreen');
+  if (!splash) return;
+  setTimeout(() => {
+    splash.classList.add('splash-hide');
+    setTimeout(() => splash.remove(), 550); // combacia con la transizione CSS
+  }, SPLASH_DURATION_MS);
+}
+
 // ── Avvio ──
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', () => {
+  gestisciSplash();
+  initApp();
+});
 
 // ── Registrazione Service Worker + banner aggiornamento ──
 if ('serviceWorker' in navigator) {

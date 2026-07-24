@@ -1,5 +1,29 @@
 Trekking — Changelog
 
+v1.1 — luglio 2026
+- Rinumerazione di versione da 1.0.1 a 1.1 (schema di versionamento più
+  semplice da comunicare e da verificare in fase di aggiornamento app).
+  Nessuna modifica funzionale rispetto alla 1.0.1: stesso contenuto,
+  riportato coerentemente in manifest.json, service worker (CACHE_NAME),
+  config.js, intestazioni dei file sorgente e manuale d'uso.
+
+v1.0.1 — luglio 2026
+- Set icone professionale a partire dal logo fornito: sfondo reso trasparente
+  agli spigoli conservando l'ombra morbida, angoli arrotondati puliti.
+  Varianti: icona "any" (192/512, con ombra), "maskable" (192/512, full-bleed
+  con safe-zone per il ritaglio del launcher), apple-touch-icon (180, senza
+  trasparenza), favicon multi-risoluzione (16/32/48/64 + .ico).
+- Splash screen d'ingresso (~3 secondi): icona in dissolvenza/scala, titolo
+  app e dati fissi dell'autore subito sotto, poi transizione verso la
+  schermata principale.
+- File `demo/trekking-demo-escursioni.json`: 3 escursioni di esempio complete
+  (percorso con traccia, partecipanti, checklist attrezzatura, avvisi in
+  bacheca), caricabili da Impostazioni in modalità append.
+- Manuale d'uso ampliato: sezioni su GPX, icone/splash, escursioni demo,
+  backup, limiti dell'uso offline, FAQ.
+- Corretta la Content-Security-Policy per consentire i font Google già
+  collegati in pagina.
+
 v1.0 — luglio 2026
 - Prima release.
 - Modulo Percorsi e Itinerari: creazione escursione, import traccia GPX,

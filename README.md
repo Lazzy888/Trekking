@@ -6,7 +6,7 @@ gruppo e sicurezza.
 
 | | |
 |---|---|
-| **Versione** | 1.0 |
+| **Versione** | 1.1 |
 | **Autore** | Lazzaro Serva — [graficaesiti.it](http://www.graficaesiti.it/) |
 | **Licenza** | Privata — Tutti i diritti riservati |
 | **Tecnologie** | HTML5, CSS3, JavaScript vanilla, IndexedDB, Service Worker, Leaflet |
@@ -23,8 +23,13 @@ trekking/
 ├── service-worker.js       ← cache offline, banner di aggiornamento
 ├── manifest.json            ← configurazione PWA
 ├── assets/
-│   ├── icon-192.png
-│   └── icon-512.png
+│   ├── icon-192.png / icon-512.png            ← icone "any" (arrotondate + ombra)
+│   ├── icon-192-maskable.png / icon-512-maskable.png  ← icone "maskable" (full-bleed)
+│   ├── apple-touch-icon.png                   ← icona iOS (senza trasparenza)
+│   ├── favicon.ico / favicon-64.png
+│   └── source/                                ← icona originale e master ad alta risoluzione
+├── demo/
+│   └── trekking-demo-escursioni.json          ← 3 escursioni di esempio (import in append)
 ├── ARCHITETTURA-SYNC.md    ← predisposizione per Worker Cloudflare + KV/D1
 ├── LICENSE
 ├── AUTHORS
@@ -45,6 +50,9 @@ trekking/
   bacheca avvisi locale, SOS con coordinate GPS via SMS.
 - **Offline-first**: tutti i dati restano sul dispositivo (IndexedDB),
   Service Worker cache-first, nessun account richiesto.
+- **Splash screen** animato (~3s) con dati fissi dell'autore, set icone
+  completo (any/maskable/apple-touch/favicon) e dati demo importabili in
+  append da `demo/trekking-demo-escursioni.json`.
 
 ## Roadmap (fase successiva)
 

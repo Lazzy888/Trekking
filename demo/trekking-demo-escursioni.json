@@ -1,0 +1,549 @@
+{
+  "app": "trekking",
+  "versione": "1.0",
+  "tipo": "demo-escursioni",
+  "generatoIl": "2026-07-24",
+  "note": "Import in modalità APPEND: aggiunge queste escursioni di esempio senza cancellare i dati già presenti.",
+  "escursioni": [
+    {
+      "id": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Anello del Monte Bulgheria",
+      "partenza": "Piano delle Pere (Camerota)",
+      "arrivo": "Piano delle Pere (Camerota)",
+      "data": "2026-08-15",
+      "durataStimata": "6h 30min",
+      "difficolta": "EE",
+      "dislivelloPos": 905,
+      "dislivelloNeg": 905,
+      "quotaMax": 1225,
+      "ferrata": false,
+      "senzaAcqua": true,
+      "lunghezzaKm": 11.4,
+      "tracciaGpx": "[{\"lat\": 40.051, \"lon\": 15.352, \"ele\": 320}, {\"lat\": 40.0525, \"lon\": 15.3555, \"ele\": 480}, {\"lat\": 40.0541, \"lon\": 15.359, \"ele\": 650}, {\"lat\": 40.0558, \"lon\": 15.3612, \"ele\": 820}, {\"lat\": 40.0572, \"lon\": 15.3634, \"ele\": 980}, {\"lat\": 40.0589, \"lon\": 15.3661, \"ele\": 1130}, {\"lat\": 40.0601, \"lon\": 15.369, \"ele\": 1225}, {\"lat\": 40.0595, \"lon\": 15.3715, \"ele\": 1140}, {\"lat\": 40.0577, \"lon\": 15.3702, \"ele\": 940}, {\"lat\": 40.0553, \"lon\": 15.366, \"ele\": 690}, {\"lat\": 40.0522, \"lon\": 15.36, \"ele\": 430}, {\"lat\": 40.051, \"lon\": 15.352, \"ele\": 320}]",
+      "ritrovoLuogo": "Parcheggio Piano delle Pere",
+      "ritrovoOrario": "07:30",
+      "meteoNote": "Previsto sereno, vento moderato in cresta. Consigliata partenza presto per il caldo estivo."
+    },
+    {
+      "id": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Sentiero delle Ripe Rosse",
+      "partenza": "San Giovanni a Piro",
+      "arrivo": "San Giovanni a Piro",
+      "data": "2026-09-05",
+      "durataStimata": "4h",
+      "difficolta": "E",
+      "dislivelloPos": 710,
+      "dislivelloNeg": 710,
+      "quotaMax": 890,
+      "ferrata": false,
+      "senzaAcqua": false,
+      "lunghezzaKm": 7.8,
+      "tracciaGpx": "[{\"lat\": 40.112, \"lon\": 15.287, \"ele\": 180}, {\"lat\": 40.1138, \"lon\": 15.2902, \"ele\": 320}, {\"lat\": 40.1155, \"lon\": 15.2935, \"ele\": 470}, {\"lat\": 40.1171, \"lon\": 15.296, \"ele\": 610}, {\"lat\": 40.1189, \"lon\": 15.2988, \"ele\": 760}, {\"lat\": 40.1202, \"lon\": 15.3015, \"ele\": 890}, {\"lat\": 40.1187, \"lon\": 15.304, \"ele\": 770}, {\"lat\": 40.116, \"lon\": 15.3005, \"ele\": 540}, {\"lat\": 40.1132, \"lon\": 15.294, \"ele\": 310}, {\"lat\": 40.112, \"lon\": 15.287, \"ele\": 180}]",
+      "ritrovoLuogo": "Piazza San Giovanni a Piro",
+      "ritrovoOrario": "08:00",
+      "meteoNote": "Nuvolosità variabile, possibili rovesci nel pomeriggio."
+    },
+    {
+      "id": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Traversata del Cervialto - Rifugio",
+      "partenza": "Piano Laceno",
+      "arrivo": "Rifugio Fiume Freddo",
+      "data": "2026-07-20",
+      "durataStimata": "7h",
+      "difficolta": "EEA",
+      "dislivelloPos": 909,
+      "dislivelloNeg": 610,
+      "quotaMax": 1809,
+      "ferrata": true,
+      "senzaAcqua": true,
+      "lunghezzaKm": 13.2,
+      "tracciaGpx": "[{\"lat\": 40.748, \"lon\": 15.221, \"ele\": 900}, {\"lat\": 40.7495, \"lon\": 15.2245, \"ele\": 1120}, {\"lat\": 40.7512, \"lon\": 15.228, \"ele\": 1350}, {\"lat\": 40.753, \"lon\": 15.2312, \"ele\": 1560}, {\"lat\": 40.7548, \"lon\": 15.2345, \"ele\": 1720}, {\"lat\": 40.7565, \"lon\": 15.2378, \"ele\": 1809}, {\"lat\": 40.758, \"lon\": 15.241, \"ele\": 1690}, {\"lat\": 40.76, \"lon\": 15.245, \"ele\": 1480}, {\"lat\": 40.7615, \"lon\": 15.249, \"ele\": 1200}]",
+      "ritrovoLuogo": "Parcheggio Piano Laceno",
+      "ritrovoOrario": "06:45",
+      "meteoNote": "Attenzione a temporali pomeridiani tipici d'estate in quota: partenza anticipata raccomandata."
+    }
+  ],
+  "partecipanti": [
+    {
+      "id": "fd155316-ebc8-43f8-8b5c-ddb362b82fee",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Marco",
+      "ruolo": "capogruppo",
+      "stato": "partecipa"
+    },
+    {
+      "id": "270b8134-1b8d-456b-8b6a-722e64a2698d",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Elena",
+      "ruolo": "responsabile-sicurezza",
+      "stato": "partecipa"
+    },
+    {
+      "id": "b86d43ad-0ce9-4aee-b217-4da98e07b64c",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Davide",
+      "ruolo": "responsabile-attrezzatura",
+      "stato": "partecipa"
+    },
+    {
+      "id": "4320dc49-0045-4fd8-a5d8-544f9c46b062",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Giulia",
+      "ruolo": "scopa",
+      "stato": "partecipa"
+    },
+    {
+      "id": "f27af3e2-d791-4bc5-932a-3ac28cfe9512",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Simone",
+      "ruolo": "membro",
+      "stato": "incerto"
+    },
+    {
+      "id": "28d28897-9b7a-4321-807a-8f217859a9f4",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Marco",
+      "ruolo": "capofila",
+      "stato": "partecipa"
+    },
+    {
+      "id": "366f7d5d-7601-4e3f-b4c5-486fa499ee16",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Chiara",
+      "ruolo": "responsabile-attrezzatura",
+      "stato": "partecipa"
+    },
+    {
+      "id": "856ac4e1-b84b-4fb5-90f1-6868768d61e1",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Luca",
+      "ruolo": "membro",
+      "stato": "partecipa"
+    },
+    {
+      "id": "5f6bad79-0f00-4b1e-b1a0-ecbb40b6c6ce",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Anna",
+      "ruolo": "membro",
+      "stato": "non-puo"
+    },
+    {
+      "id": "36f552f2-07ad-4fff-8a2e-4f8d71a85073",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Elena",
+      "ruolo": "capogruppo",
+      "stato": "partecipa"
+    },
+    {
+      "id": "25c1fb98-ed95-4629-90cd-64bd4dc46da9",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Davide",
+      "ruolo": "responsabile-sicurezza",
+      "stato": "partecipa"
+    },
+    {
+      "id": "3edef86e-ff0f-4347-950f-0a845b865e21",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Marco",
+      "ruolo": "responsabile-attrezzatura",
+      "stato": "partecipa"
+    },
+    {
+      "id": "b11a9884-e6bd-4e0b-bfb9-5a1a532469d0",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Giulia",
+      "ruolo": "scopa",
+      "stato": "partecipa"
+    },
+    {
+      "id": "f7772b5a-c1d3-46c6-8f0c-20304bd9f2c7",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Paolo",
+      "ruolo": "membro",
+      "stato": "incerto"
+    },
+    {
+      "id": "a02c7517-e0b4-4f1f-ba63-53ad290adf68",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Chiara",
+      "ruolo": "membro",
+      "stato": "partecipa"
+    }
+  ],
+  "equipaggiamento": [
+    {
+      "id": "bbd91ef0-2bca-4d3b-a196-d228e334c8d2",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Zaino",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "1f8b9320-9665-43f9-be9a-a10764f81750",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Scarponi da trekking",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "55d8bfaf-cfb2-4376-87d8-dc2d06849e3d",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Acqua (min. 1.5L)",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "d9ee17b8-c6b9-4c08-91d3-ce7d90c1e07a",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Kit primo soccorso personale",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "89856862-15d2-46a7-a1f7-0db5bfc4bfd9",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Cibo/snack",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "e8a96d62-4a53-4c45-b414-5e7228c4429a",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Bastoncini",
+      "categoria": "personale-consigliato",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "187d8d81-eb64-485d-ade9-293293476b18",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Kit primo soccorso di gruppo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "fd155316-ebc8-43f8-8b5c-ddb362b82fee",
+      "spuntato": true
+    },
+    {
+      "id": "effd901a-774b-4b51-8ba6-910bd2bbe98e",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Corda/imbragatura",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "b86d43ad-0ce9-4aee-b217-4da98e07b64c",
+      "spuntato": true
+    },
+    {
+      "id": "9ea68d8e-95c7-4ef8-a639-98a7214b87e1",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Fornello da campo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "4320dc49-0045-4fd8-a5d8-544f9c46b062",
+      "spuntato": true
+    },
+    {
+      "id": "7461eb13-7eb3-4c02-b055-1825830c23a2",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Riserva idrica extra",
+      "categoria": "personale-obbligatorio",
+      "motivo": "nessuna fonte d'acqua sul percorso",
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "b2f69823-03a5-4a85-b7da-6c74f3fb986a",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Fischietto",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "270b8134-1b8d-456b-8b6a-722e64a2698d",
+      "spuntato": true
+    },
+    {
+      "id": "cacaaa5f-0797-44ff-819b-baffbc4aad5f",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "nome": "Telo termico",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "270b8134-1b8d-456b-8b6a-722e64a2698d",
+      "spuntato": true
+    },
+    {
+      "id": "f704e95b-d4ad-49d7-a801-c63e59777780",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Zaino",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "fc32f354-900e-4ed6-89ff-2abbf953d89a",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Scarponi da trekking",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "2ca95f1f-78d0-40ae-a07e-8d38a6131a91",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Acqua (min. 1.5L)",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "78a093b1-7132-4220-b419-1f766e2b7dc0",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Kit primo soccorso personale",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "d2c13a8d-35c7-4254-ada4-63f78b53b50a",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Cibo/snack",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "9c9edae1-bd79-4a30-8239-2f90f33fe241",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Bastoncini",
+      "categoria": "personale-consigliato",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "496948e8-75ed-457b-aba2-a3a1791ae8c9",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Kit primo soccorso di gruppo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "366f7d5d-7601-4e3f-b4c5-486fa499ee16",
+      "spuntato": true
+    },
+    {
+      "id": "7ce87ead-73ff-4365-97c7-cfabd2e23292",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Corda/imbragatura",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "59bbdf2e-6759-4de0-9272-8b7906fab5a7",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Fornello da campo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "856ac4e1-b84b-4fb5-90f1-6868768d61e1",
+      "spuntato": true
+    },
+    {
+      "id": "72d23138-fbe8-4fc5-9d41-e3400518820b",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Fischietto",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "28d28897-9b7a-4321-807a-8f217859a9f4",
+      "spuntato": true
+    },
+    {
+      "id": "c1b7543a-0776-4c82-8d71-50c8fdd1c33e",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "nome": "Telo termico",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "28d28897-9b7a-4321-807a-8f217859a9f4",
+      "spuntato": true
+    },
+    {
+      "id": "bf8524af-63c5-414a-9ac4-6b6b23624da9",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Zaino",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "bb043881-f3aa-4216-a797-9bb908faa7ac",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Scarponi da trekking",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": true
+    },
+    {
+      "id": "f895ae66-9986-494b-87b7-7d181b78633c",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Acqua (min. 1.5L)",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "79016d05-b751-487e-bc3a-d6359c0dc40b",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Kit primo soccorso personale",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "2c8d6f18-6280-49fc-9ba7-070f24ef34f3",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Cibo/snack",
+      "categoria": "personale-obbligatorio",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "ed5b1c88-f771-4870-94a8-54497c43df1e",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Bastoncini",
+      "categoria": "personale-consigliato",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "1e92fc99-5b7d-467a-a333-36e8a58fe07b",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Kit primo soccorso di gruppo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "25c1fb98-ed95-4629-90cd-64bd4dc46da9",
+      "spuntato": true
+    },
+    {
+      "id": "b38968ed-3255-4228-a7a1-d4db701be11a",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Corda/imbragatura",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": "3edef86e-ff0f-4347-950f-0a845b865e21",
+      "spuntato": true
+    },
+    {
+      "id": "0e59d0f5-6ef2-4814-b465-03119d830b3e",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Fornello da campo",
+      "categoria": "gruppo-condiviso",
+      "motivo": null,
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "a2684067-29af-4687-86cb-3950f722ae7c",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Kit da ferrata",
+      "categoria": "personale-obbligatorio",
+      "motivo": "tratti esposti/ferrata",
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "9c144994-d62b-4edb-925d-bd817067ec01",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Imbrago",
+      "categoria": "personale-obbligatorio",
+      "motivo": "tratti esposti/ferrata",
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "268cc326-30ca-42c9-8411-a6cebfe202f2",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Casco",
+      "categoria": "personale-obbligatorio",
+      "motivo": "tratti esposti/ferrata",
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "fc3e7992-f44b-4657-b1ec-4d39991f9716",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Riserva idrica extra",
+      "categoria": "personale-obbligatorio",
+      "motivo": "nessuna fonte d'acqua sul percorso",
+      "assegnatoA": null,
+      "spuntato": false
+    },
+    {
+      "id": "5e07f11f-9a33-4ff4-b6a4-34090df9fd1e",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Fischietto",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "36f552f2-07ad-4fff-8a2e-4f8d71a85073",
+      "spuntato": true
+    },
+    {
+      "id": "b67f5b25-a91a-471b-8dfb-9a4540bfe42f",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "nome": "Telo termico",
+      "categoria": "emergenza",
+      "motivo": null,
+      "assegnatoA": "36f552f2-07ad-4fff-8a2e-4f8d71a85073",
+      "spuntato": true
+    }
+  ],
+  "bacheca": [
+    {
+      "id": "3b8d6cae-67c1-47a0-8d0a-9cde5c6acfd2",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "testo": "Aggiornamento meteo: confermato sereno, portate comunque una giacca a vento per il crinale.",
+      "data": 1784703798152
+    },
+    {
+      "id": "9131d40f-9d65-4bc0-9071-84fada055696",
+      "escursioneId": "0b4bda35-1d9c-42f1-8adf-4565732a4b19",
+      "testo": "Ritrovo alle 7:30 in punto, il parcheggio si riempie in fretta d'estate.",
+      "data": 1784790198152
+    },
+    {
+      "id": "213958dc-48b9-47cb-ac82-0bde4b89efa1",
+      "escursioneId": "f6c6e4c7-733a-46a9-a5f6-031f1d3e18f8",
+      "testo": "Possibile rovescio nel pomeriggio: portate una mantella leggera.",
+      "data": 1784617398152
+    },
+    {
+      "id": "0b1d1cba-3af9-4e99-a3d4-d6b2ec8a40b4",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "testo": "Tratto attrezzato confermato: imbrago e casco obbligatori per tutti.",
+      "data": 1784530998152
+    },
+    {
+      "id": "81a7110a-2fd1-45c5-b632-4beba3199806",
+      "escursioneId": "db264f43-45d9-40f5-9b25-268184a4b922",
+      "testo": "Partenza anticipata alle 6:45 per evitare i temporali pomeridiani in quota.",
+      "data": 1784790198152
+    }
+  ]
+}
