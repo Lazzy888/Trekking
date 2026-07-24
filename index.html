@@ -1,0 +1,170 @@
+<!--
+  ============================================================
+  Trekking v1.0 — Pianifica con il gruppo
+  Copyright (c) 2026 Lazzaro Serva - Centola
+  Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
+  http://www.graficaesiti.it/
+  Tutti i diritti riservati – All rights reserved.
+  Vietata riproduzione, modifica e distribuzione senza
+  autorizzazione scritta del titolare del copyright.
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
+<title>Trekking - Pianifica con il gruppo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="theme-color" content="#2e5339">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Banner aggiornamento -->
+<div id="updateBanner" role="status" aria-live="polite">
+  <div class="ub-text">
+    🆕 Nuova versione disponibile
+    <span class="ub-sub">Aggiorna per applicare le novità</span>
+  </div>
+  <button class="ub-btn" id="updateNowBtn">Aggiorna</button>
+  <button class="ub-close" id="updateDismissBtn" aria-label="Chiudi">✕</button>
+</div>
+
+<header id="header">
+  <span class="logo">🏔️</span>
+  <div class="title">Trekking<span>Pianifica con il gruppo</span></div>
+  <button class="hdr-btn" id="helpBtn" aria-label="Manuale d'uso">❓</button>
+</header>
+
+<main id="main"></main>
+
+<nav id="bottom-nav">
+  <button class="nav-btn active" data-view="percorsi"><span class="ni">🥾</span>Percorsi</button>
+  <button class="nav-btn" data-view="attrezzatura"><span class="ni">🎒</span>Attrezzatura</button>
+  <button class="nav-btn" data-view="gruppo"><span class="ni">👥</span>Gruppo</button>
+  <button class="nav-btn" data-view="impostazioni"><span class="ni">⚙️</span>Impostazioni</button>
+</nav>
+
+<!-- Modale generica (form) -->
+<div class="modal-backdrop hidden" id="modalGenerico">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitolo">Titolo</h2>
+      <button class="modal-close" id="closeModalGenerico">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Modale manuale d'uso -->
+<div class="modal-backdrop center hidden" id="modalHelp">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Manuale d'uso</h2>
+      <button class="modal-close" id="closeHelp">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="author-card">
+        <div class="author-card-top">
+          <div class="author-app-icon">🏔️</div>
+          <div class="author-app-info">
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.0</span></div>
+            <div class="author-app-sub">Produzione Software — luglio 2026</div>
+          </div>
+        </div>
+        <div class="author-details">
+          <div class="author-line"><strong>© 2026 Lazzaro Serva - Centola</strong></div>
+          <div class="author-line">Via Tasso, 28 – 84051 CENTOLA (SA) – Italia</div>
+          <div class="author-line">🌐 <a href="http://www.graficaesiti.it/" target="_blank" rel="noopener">www.graficaesiti.it</a></div>
+        </div>
+        <div class="author-rights">
+          🔒 <strong>Tutti i diritti riservati.</strong> Vietata la riproduzione,
+          modifica o distribuzione senza autorizzazione scritta del titolare.
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>🥾 Percorsi e Itinerari</h3>
+        <p>Crea una nuova escursione con partenza, arrivo, difficoltà e dislivello.
+        Puoi importare una traccia GPX per vedere il percorso sulla mappa e calcolare
+        automaticamente lunghezza e dislivelli. Condividi l'escursione con il gruppo
+        tramite il pulsante "Condividi".</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🎒 Attrezzatura e Consigli</h3>
+        <p>La checklist si genera automaticamente in base alle caratteristiche del
+        percorso (quota, presenza di ferrate, disponibilità d'acqua). Spunta gli
+        oggetti già preparati e assegna l'equipaggiamento di gruppo ai singoli
+        partecipanti per evitare doppioni o dimenticanze.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>👥 Gruppo</h3>
+        <p>Aggiungi i partecipanti, assegna i ruoli (capogruppo, scopa, responsabile
+        sicurezza...) e imposta il punto di ritrovo. La bacheca avvisi e il pulsante
+        SOS sono disponibili anche con connessione assente o limitata.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>📥 Installazione PWA</h3>
+        <ul>
+          <li><strong>Android (Chrome):</strong> tocca ⋮ → "Aggiungi a schermata Home" o "Installa app".</li>
+          <li><strong>iPhone (Safari):</strong> tocca Condividi → "Aggiungi a Home".</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3>🆕 Aggiornamenti automatici</h3>
+        <p>Quando è disponibile una nuova versione, comparirà un banner in basso:
+        tocca "Aggiorna" per applicarla. Se non lo tocchi, l'app continua a
+        funzionare con la versione già installata.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🔒 Privacy e protezione dei dati</h3>
+        <p><strong>Tutti i dati inseriti vengono salvati esclusivamente su questo
+        dispositivo</strong> (IndexedDB e Cache API del browser). Nessuna
+        informazione viene trasmessa a server esterni.</p>
+        <ul>
+          <li><strong>Nessun account, nessun login.</strong></li>
+          <li><strong>Nessuna connessione a server</strong> — funziona completamente offline.</li>
+          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS), mai salvata né trasmessa.</li>
+          <li>Cancellare la cache del browser rimuove anche tutti i dati dell'app: usa "Esporta dati" prima di farlo.</li>
+        </ul>
+        <p style="font-size:14px;color:var(--text2);">
+          Questa app è conforme al Regolamento UE 2016/679 (GDPR) in quanto non tratta
+          dati personali al di fuori del dispositivo dell'utente in questa versione.<br/>
+          Titolare: <strong>Lazzaro Serva</strong> · Via Tasso 28 · 84051 Centola (SA) ·
+          <a href="http://www.graficaesiti.it" target="_blank" rel="noopener">www.graficaesiti.it</a>
+        </p>
+      </div>
+
+      <div class="help-section">
+        <h3>🛡️ Sicurezza — nota su Google Play Protect</h3>
+        <p>Se compare il messaggio "App non sicura bloccata" di Google Play
+        Protect, non riguarda questa app: quella segnalazione appare per file
+        .apk installati fuori dal Play Store. Trekking è una PWA installata
+        tramite browser e non è soggetta a quei controlli.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="config.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

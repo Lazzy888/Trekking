@@ -1,0 +1,21 @@
+Trekking — Changelog
+
+v1.0 — luglio 2026
+- Prima release.
+- Modulo Percorsi e Itinerari: creazione escursione, import traccia GPX,
+  calcolo automatico lunghezza/dislivelli, mappa interattiva (Leaflet +
+  OpenStreetMap), condivisione via Web Share API.
+- Modulo Attrezzatura e Consigli: checklist base + checklist intelligente
+  generata in base a quota, presenza ferrate, disponibilità d'acqua.
+- Equipaggiamento richiesto: categorie personale obbligatorio/consigliato,
+  di gruppo condiviso, emergenza; assegnazione "chi porta cosa".
+- Modulo Gruppo: partecipanti, ruoli, stato presenza, punto di ritrovo,
+  bacheca avvisi locale, pulsante SOS con invio coordinate GPS via SMS.
+- Impostazioni: tema giorno/notte, dimensione testo, export/import JSON,
+  svuota cache e aggiorna, manuale d'uso con sezione privacy/GDPR.
+- Offline-first: IndexedDB per i dati, Service Worker cache-first con
+  banner di aggiornamento non invasivo, cache dedicata per le tile mappa.
+- Architettura predisposta per la sincronizzazione cloud futura (Worker
+  Cloudflare + KV/D1): schema dati con id/updatedAt/syncStatus, flag
+  SYNC_ENABLED e API_BASE_URL in config.js, ruolo "admin" già previsto
+  nel modello partecipanti. Vedi ARCHITETTURA-SYNC.md.

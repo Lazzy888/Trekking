@@ -1,0 +1,29 @@
+AUTORE
+------
+Lazzaro Serva
+Via Tasso, 28 – 84051 Centola (SA) – Italia
+http://www.graficaesiti.it/
+
+PROGETTO
+--------
+Nome: Trekking - Pianifica con il gruppo
+Versione: 1.0
+Data: luglio 2026
+Descrizione: PWA offline-first per la pianificazione di escursioni di gruppo:
+percorsi e itinerari, attrezzatura, equipaggiamento condiviso, gestione
+gruppo e sicurezza (punto di ritrovo, SOS).
+
+COPYRIGHT
+---------
+Copyright (c) 2026 Lazzaro Serva - Centola
+Tutti i diritti riservati.
+
+TECNOLOGIE
+----------
+- HTML5 / CSS3 / JavaScript vanilla (nessun framework)
+- IndexedDB per la persistenza locale (dati "sync-ready" per una futura
+  sincronizzazione con Cloudflare Worker + KV/D1)
+- Service Worker (cache-first, banner di aggiornamento non invasivo)
+- Web Share API, Web Geolocation API
+- Leaflet + OpenStreetMap per la mappa interattiva (CDN)
+- Architettura predisposta per sync remota futura (vedi ARCHITETTURA-SYNC.md)
