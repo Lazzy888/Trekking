@@ -1,16 +1,16 @@
 // ============================================================
-// Trekking v1.2 — service-worker.js
+// Trekking v1.4 — service-worker.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 
-const CACHE_NAME = 'trekking-v1.2';
-const TILE_CACHE_NAME = 'trekking-tiles-v1.2';
+const CACHE_NAME = 'trekking-v1.4';
+const TILE_CACHE_NAME = 'trekking-tiles-v1.4';
 
 const ASSETS = [
   './', './index.html', './manifest.json', './monitoraggio.html',
-  './style.css', './config.js', './storage.js', './app.js',
+  './style.css', './config.js', './storage.js', './sync.js', './app.js',
   './assets/icon-192.png', './assets/icon-512.png',
   './assets/icon-192-maskable.png', './assets/icon-512-maskable.png',
   './assets/apple-touch-icon.png', './assets/favicon.ico', './assets/favicon-64.png',
@@ -90,4 +90,35 @@ self.addEventListener('message', event => {
   if (type === 'CACHE_ROUTE_ASSETS') {
     return;
   }
+});
+
+// ── Notifiche push (sincronizzazione di gruppo, v1.3) ──
+// Il payload arriva già cifrato/decifrato dal browser secondo lo standard
+// Web Push; qui riceviamo il JSON in chiaro inviato dal Worker Cloudflare
+// ({ titolo, corpo, tag }).
+self.addEventListener('push', event => {
+  let dati = { titolo: 'Trekking', corpo: 'Nuovo avviso dal gruppo.' };
+  try { if (event.data) dati = { ...dati, ...event.data.json() }; } catch (_) { /* payload non JSON: uso i valori di default */ }
+
+  event.waitUntil(
+    self.registration.showNotification(dati.titolo, {
+      body: dati.corpo,
+      icon: './assets/icon-192.png',
+      badge: './assets/icon-192.png',
+      tag: dati.tag || 'trekking',
+      renotify: true,
+    })
+  );
+});
+
+// ── Click su una notifica: porta l'utente sulla vista Gruppo dell'app ──
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+      const client = clientsArr.find(c => 'focus' in c);
+      if (client) return client.focus();
+      return self.clients.openWindow('./index.html');
+    })
+  );
 });

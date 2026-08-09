@@ -1,5 +1,5 @@
 /* ============================================================
-   Trekking v1.2
+   Trekking v1.4
    Copyright (c) 2026 Lazzaro Serva - Centola
    http://www.graficaesiti.it/
    Tutti i diritti riservati – All rights reserved.
@@ -213,6 +213,18 @@ main#main { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
 .peso-zaino-table th, .peso-zaino-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
 .peso-warning { background: #fff3e0; border: 1.5px solid #ffb74d; border-radius: 10px; padding: 9px 13px; font-size: var(--fs-small); color: #7c3e00; margin: 0; }
 .ritrovo-box, .bacheca-box { background: var(--surface); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); margin-bottom: 14px; }
+
+/* ── Sincronizzazione di gruppo ── */
+.sync-box { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 14px; border: 1.5px dashed var(--border); }
+.sync-box-attiva { border: 1.5px solid var(--primary-l); }
+.sync-box h3 { margin: 0 0 6px; font-size: var(--fs-body); }
+.codice-gruppo { letter-spacing: 2px; font-size: 1.1em; color: var(--primary-d); }
+.sync-box-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sync-poll-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.btn-link { background: none; border: none; color: var(--primary); font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; font-size: var(--fs-small); }
+.posizione-live-box { background: var(--surface); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); margin-bottom: 14px; }
+.posizioni-list { list-style: none; padding: 0; margin: 8px 0 0; font-size: var(--fs-small); color: var(--text2); }
+.posizioni-list li { padding: 4px 0; border-bottom: 1px solid var(--border); }
 .ritrovo-box input { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: var(--radius-s); border: 1px solid var(--border); }
 .bacheca-box textarea { width: 100%; min-height: 60px; padding: 8px; border-radius: var(--radius-s); border: 1px solid var(--border); margin-bottom: 8px; resize: vertical; }
 .bacheca-list { list-style: none; padding: 0; margin-top: 10px; }
@@ -297,3 +309,21 @@ nav#bottom-nav {
 #updateBanner .ub-sub { font-size: 11px; font-weight: 400; opacity: .85; display: block; margin-top: 2px; }
 #updateBanner .ub-btn { background: #fff; color: var(--primary-d); border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 800; }
 #updateBanner .ub-close { background: none; border: none; color: #fff; font-size: 16px; opacity: .8; }
+
+/* ── Meteo automatico ── */
+.meteo-box { background: var(--surface); border-radius: var(--radius-s); padding: 10px 12px; margin: 10px 0; box-shadow: var(--shadow); }
+.meteo-oggi { display: flex; align-items: center; gap: 10px; }
+.meteo-icona { font-size: 30px; line-height: 1; }
+.meteo-dettagli { font-size: var(--fs-small); color: var(--text2); }
+.meteo-data { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.meteo-stantia { color: #c77700; }
+
+/* ── Stato del sentiero ── */
+.stato-sentiero-box { border-radius: var(--radius-s); padding: 10px 12px; margin: 10px 0; border: 1.5px solid var(--border); }
+.stato-sentiero-box.stato-aperto { background: #eaf7ea; border-color: #8fd19e; }
+.stato-sentiero-box.stato-attenzione { background: #fff8e1; border-color: #ffca66; }
+.stato-sentiero-box.stato-chiuso { background: #fdecea; border-color: #f28b82; }
+.ss-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ss-badge { font-weight: 800; font-size: var(--fs-small); }
+.ss-nota { margin: 6px 0 0; font-size: var(--fs-small); }
+.ss-data { margin: 4px 0 0; font-size: 12px; color: var(--text2); }

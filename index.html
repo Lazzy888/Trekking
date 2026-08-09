@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.2 — Pianifica con il gruppo
+  Trekking v1.4 — Pianifica con il gruppo
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -94,7 +94,7 @@
         <div class="author-card-top">
           <div class="author-app-icon">🏔️</div>
           <div class="author-app-info">
-            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.2</span></div>
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.4</span></div>
             <div class="author-app-sub">Produzione Software — luglio 2026</div>
           </div>
         </div>
@@ -145,6 +145,19 @@
         panoramici o pericoli/vie di fuga: puoi inserire le coordinate a mano
         o usare "📡 Usa posizione attuale" mentre sei sul posto. I punti
         compaiono come marker sulla mappa e in un elenco sotto la scheda.</p>
+        <p><strong>🌦️ Meteo automatico</strong> — tocca "Scarica previsioni
+        meteo" nella scheda dell'escursione: l'app individua le coordinate
+        dal luogo di partenza (o dalla traccia GPX, se già importata) e
+        scarica le previsioni per la data dell'escursione tramite il
+        servizio gratuito Open-Meteo. Richiede connessione al momento della
+        richiesta; il risultato resta salvato finché non tocchi "Aggiorna
+        previsioni".</p>
+        <p><strong>🚧 Stato del sentiero</strong> — badge colorato (aperto /
+        attenzione / chiuso) nella scheda dell'escursione, aggiornabile da
+        chi organizza tramite "✏️ Aggiorna" con una nota libera (es. "frana
+        al km 3"). Non è automatico: va tenuto aggiornato da chi conosce le
+        condizioni reali. Se la sincronizzazione di gruppo è attiva,
+        aggiornarlo invia subito un avviso urgente a tutto il gruppo.</p>
       </div>
 
       <div class="help-section">
@@ -184,10 +197,9 @@
         <p><strong>Punto di ritrovo</strong> — luogo e orario, sempre visibili
         anche offline.</p>
         <p><strong>Bacheca avvisi</strong> — messaggi rapidi per il gruppo
-        (cambio orario, meteo, modifiche percorso). In questa versione la
-        bacheca resta locale sul singolo dispositivo: la sincronizzazione in
-        tempo reale tra i telefoni dei partecipanti arriverà con la
-        sincronizzazione cloud in una versione successiva.</p>
+        (cambio orario, meteo, modifiche percorso). Senza sincronizzazione
+        attiva resta locale sul singolo dispositivo; con la sincronizzazione
+        (vedi sotto) diventa una vera chat condivisa in tempo reale.</p>
         <p><strong>SOS</strong> — il pulsante "🆘 Invia posizione SOS" richiede
         il permesso di geolocalizzazione al browser, poi apre l'app SMS con un
         messaggio precompilato contenente le coordinate GPS (formato WGS84) e
@@ -205,6 +217,44 @@
         chi resta a casa. Non richiede rete né account dopo la creazione: i
         dati sono contenuti interamente nel link, che va rigenerato e
         reinviato se il percorso cambia.</p>
+      </div>
+
+      <div class="help-section">
+        <h3>🔄 Sincronizzazione di gruppo (chat, posizione live, notifiche)</h3>
+        <p>Funzione facoltativa che collega i dispositivi dei partecipanti a
+        un Worker Cloudflare, per condividere in tempo reale ciò che in
+        V1.0-1.2 restava solo locale. È disponibile solo se chi ha
+        pubblicato l'app ha distribuito il Worker (vedi
+        <code>/trekking-sync-worker</code>) e configurato <code>config.js</code>;
+        altrimenti la sezione Gruppo funziona come prima, tutta offline.</p>
+        <p><strong>Attivazione</strong> — dalla sezione Gruppo, tocca "🔄
+        Attiva sincronizzazione": la prima volta ti verrà chiesto un nome con
+        cui farti riconoscere, poi verrà generato un codice gruppo di 6
+        caratteri. Condividi quel codice con chi partecipa (pulsante "🔗
+        Condividi codice"): serve a chi vuole restare aggiornato, ma in
+        questa versione ogni dispositivo attiva la sincronizzazione in modo
+        indipendente sulla stessa escursione già presente sul proprio
+        telefono.</p>
+        <p><strong>Chat del gruppo</strong> — sostituisce la bacheca quando la
+        sincronizzazione è attiva: i messaggi inviati da un dispositivo
+        compaiono su tutti gli altri entro pochi secondi (la vista si
+        aggiorna da sola ogni 15 secondi, oppure tocca "🔄 Aggiorna ora").
+        La spunta "⚠️ Urgente" invia anche una notifica push a tutto il
+        gruppo, anche a chi ha l'app chiusa.</p>
+        <p><strong>📡 Posizione live</strong> — attivando la relativa casella,
+        il dispositivo invia la propria posizione GPS al gruppo ogni circa 30
+        secondi, finché resti nella app con la casella spuntata. Le posizioni
+        più vecchie di 4 ore scompaiono da sole.</p>
+        <p><strong>🔔 Notifiche push</strong> — il pulsante "Notifiche push"
+        richiede il permesso al browser e registra il dispositivo presso il
+        Worker. Da quel momento ricevi una notifica anche ad app chiusa
+        quando qualcuno pubblica un messaggio urgente nella chat.</p>
+        <p><strong>Privacy</strong> — a differenza del resto dell'app,
+        con la sincronizzazione attiva i messaggi, la posizione GPS e la
+        registrazione per le notifiche vengono inviati al Worker e restano
+        leggibili a chiunque conosca il codice gruppo, per il tempo indicato
+        nel README del Worker (messaggi 14 giorni, posizioni 4 ore). Non è
+        pensata per dati sensibili.</p>
       </div>
 
       <div class="help-section">
@@ -269,8 +319,10 @@
           <li>Percorsi, checklist, gruppo e bacheca funzionano sempre, anche senza rete.</li>
           <li>Le tile della mappa sono disponibili offline solo per le zone già visualizzate almeno una volta con connessione attiva.</li>
           <li>L'invio SOS via SMS richiede comunque copertura di rete cellulare (anche minima) per l'invio del messaggio.</li>
-          <li>In questa versione i dati non si sincronizzano automaticamente tra i dispositivi dei diversi partecipanti: usa "Condividi" o l'esportazione/importazione JSON per allinearli manualmente.</li>
+          <li>Senza sincronizzazione attivata, i dati non si allineano automaticamente tra i dispositivi dei diversi partecipanti: usa "Condividi" o l'esportazione/importazione JSON per allinearli manualmente.</li>
+          <li>Con la sincronizzazione attivata, chat, posizione live e notifiche push richiedono rete per funzionare: senza connessione i messaggi restano in coda solo localmente finché non riprovi l'invio.</li>
           <li>Il "Link monitoraggio" apre la pagina <code>monitoraggio.html</code> pubblicata insieme all'app: perché chi resta a casa possa aprirlo, l'app deve essere ospitata su un indirizzo web raggiungibile (es. GitHub Pages), non solo installata sul telefono di chi parte.</li>
+          <li>Le previsioni meteo richiedono rete al momento del download; una volta scaricate restano visibili offline finché non le aggiorni di nuovo. Lo stato del sentiero, invece, essendo un campo manuale, è sempre disponibile offline (l'eventuale avviso push al gruppo va in coda finché non torna la connessione).</li>
         </ul>
       </div>
 
@@ -291,18 +343,24 @@
 
       <div class="help-section">
         <h3>🔒 Privacy e protezione dei dati</h3>
-        <p><strong>Tutti i dati inseriti vengono salvati esclusivamente su questo
-        dispositivo</strong> (IndexedDB e Cache API del browser). Nessuna
-        informazione viene trasmessa a server esterni.</p>
+        <p><strong>Per impostazione predefinita tutti i dati inseriti vengono
+        salvati esclusivamente su questo dispositivo</strong> (IndexedDB e
+        Cache API del browser). Nessuna informazione viene trasmessa a
+        server esterni, salvo quanto descritto qui sotto.</p>
         <ul>
-          <li><strong>Nessun account, nessun login.</strong></li>
-          <li><strong>Nessuna connessione a server</strong> — funziona completamente offline (a parte le tile mappa e l'eventuale invio SMS).</li>
-          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS), mai salvata né trasmessa se non nell'SMS che invii tu stesso.</li>
+          <li><strong>Nessun account, nessun login</strong>, nemmeno con la sincronizzazione attiva.</li>
+          <li><strong>Nessuna connessione a server</strong> per impostazione predefinita — funziona completamente offline (a parte le tile mappa e l'eventuale invio SMS).</li>
+          <li><strong>Meteo automatico</strong> — quando lo richiedi esplicitamente, il nome del luogo di partenza (o le coordinate della traccia GPX) viene inviato al servizio gratuito Open-Meteo (geocoding-api.open-meteo.com e api.open-meteo.com) per ottenere le previsioni. Nessun altro dato dell'app viene condiviso con questo servizio.</li>
+          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS, o la casella "condividi posizione" quando la sincronizzazione è attiva), mai salvata né trasmessa al di fuori di questi due casi.</li>
+          <li><strong>Sincronizzazione di gruppo (facoltativa)</strong> — se attivata dalla sezione Gruppo, i messaggi della chat, la posizione GPS live e la registrazione per le notifiche push vengono inviati al Worker Cloudflare indicato in configurazione e restano leggibili a chiunque conosca il codice gruppo, per un periodo limitato (messaggi 14 giorni, posizioni 4 ore). Resta disattivata finché non la attivi tu, escursione per escursione.</li>
           <li>Cancellare la cache del browser rimuove anche tutti i dati dell'app: usa "Esporta dati" prima di farlo.</li>
         </ul>
         <p style="font-size:14px;color:var(--text2);">
-          Questa app è conforme al Regolamento UE 2016/679 (GDPR) in quanto non tratta
-          dati personali al di fuori del dispositivo dell'utente in questa versione.<br/>
+          In assenza di sincronizzazione attiva, questa app è conforme al Regolamento UE
+          2016/679 (GDPR) in quanto non tratta dati personali al di fuori del dispositivo
+          dell'utente. Attivando la sincronizzazione di gruppo, alcuni dati (messaggi,
+          posizione GPS, subscription notifiche) vengono trattati dal Worker indicato da
+          chi ha distribuito questa installazione dell'app.<br/>
           Titolare: <strong>Lazzaro Serva</strong> · Via Tasso 28 · 84051 Centola (SA) ·
           <a href="http://www.graficaesiti.it" target="_blank" rel="noopener">www.graficaesiti.it</a>
         </p>
@@ -323,6 +381,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="config.js"></script>
 <script src="storage.js"></script>
+<script src="sync.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

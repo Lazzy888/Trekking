@@ -1,15 +1,33 @@
 // ============================================================
-// Trekking v1.2 — config.js
+// Trekking v1.4 — config.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 //
-// Unico punto in cui si attiverà la sincronizzazione cloud
-// (Worker Cloudflare + KV/D1) quando sarà pronta. In V1.0 resta
-// disattivata: tutti i dati restano sul dispositivo.
+// Sincronizzazione di gruppo (Worker Cloudflare + KV). Disattiva di
+// default: finché SYNC_ENABLED resta false, tutto funziona come prima,
+// 100% locale. Per attivarla, dopo aver distribuito il Worker (vedi
+// /trekking-sync-worker/README.md):
+//   1. imposta SYNC_ENABLED = true
+//   2. incolla l'indirizzo del Worker in API_BASE_URL
+//   3. incolla la chiave pubblica VAPID in VAPID_PUBLIC_KEY
 
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.4';
+
+const SYNC_ENABLED = false;
+const API_BASE_URL = ''; // es. 'https://trekking-sync.<account>.workers.dev'
+const VAPID_PUBLIC_KEY = ''; // chiave pubblica generata da generate-vapid-keys.mjs
+
+// Ogni quanti millisecondi la vista Gruppo interroga il Worker per nuovi
+// messaggi e posizioni, quando la sincronizzazione è attiva e la vista è
+// aperta. Nessun polling se SYNC_ENABLED è false o il gruppo non ha un
+// codice attivo.
+const SYNC_POLL_MS = 15000;
+
+// Dopo quanti minuti senza aggiornamento una posizione live viene
+// considerata "vecchia" e mostrata in grigio sulla mappa invece che a colori.
+const POSIZIONE_STANTIA_MIN = 20;
 
 // Percorso del file JSON con le escursioni demo, caricabile in modalità
 // APPEND dalle Impostazioni ("Carica escursioni di esempio").
@@ -18,15 +36,9 @@ const DEMO_DATA_URL = './demo/trekking-demo-escursioni.json';
 // Durata dello splash screen d'ingresso (millisecondi).
 const SPLASH_DURATION_MS = 3000;
 
-// Passare a true quando il Worker sarà disponibile.
-const SYNC_ENABLED = false;
-
-// URL del Worker Cloudflare (da valorizzare in fase di deploy del backend).
-const API_BASE_URL = ''; // es. 'https://trekking-sync.tuoaccount.workers.dev'
-
 // Ruoli previsti nel modello dati (il ruolo 'admin' non ha ancora
-// effetti in V1.0: sarà usato dal pannello amministratore futuro
-// per inviare indicazioni al gruppo tramite il Worker).
+// effetti operativi in v1.3: resta disponibile per un futuro pannello
+// di moderazione lato Worker).
 const RUOLI_PARTECIPANTE = [
   'capogruppo', 'capofila', 'scopa',
   'responsabile-sicurezza', 'responsabile-attrezzatura',
@@ -81,4 +93,39 @@ const ITINERARI_PREDEFINITI = [
     ferrata: true, senzaAcqua: true,
     descrizione: 'Percorso attrezzato: obbligatorio kit da ferrata completo (imbrago, casco, set da ferrata).',
   },
+];
+
+// ============================================================
+// METEO AUTOMATICO — Open-Meteo (gratuito, senza chiave API)
+// ============================================================
+// Geocoding: converte il nome del luogo di partenza in coordinate.
+const GEOCODING_API_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+// Previsioni giornaliere per le coordinate ottenute (o quelle del primo
+// punto della traccia GPX, se già importata).
+const METEO_API_URL = 'https://api.open-meteo.com/v1/forecast';
+
+// Ogni quante ore una previsione già scaricata viene considerata "vecchia"
+// e va rinnovata automaticamente riaprendo la scheda escursione.
+const METEO_CACHE_ORE = 6;
+
+// Mappatura essenziale dei codici meteo WMO (usati da Open-Meteo) in
+// icona + descrizione breve in italiano.
+const METEO_WMO = {
+  0: ['☀️', 'Sereno'], 1: ['🌤️', 'Prevalentemente sereno'], 2: ['⛅', 'Parzialmente nuvoloso'], 3: ['☁️', 'Coperto'],
+  45: ['🌫️', 'Nebbia'], 48: ['🌫️', 'Nebbia con brina'],
+  51: ['🌦️', 'Pioviggine debole'], 53: ['🌦️', 'Pioviggine'], 55: ['🌧️', 'Pioviggine intensa'],
+  61: ['🌧️', 'Pioggia debole'], 63: ['🌧️', 'Pioggia'], 65: ['🌧️', 'Pioggia intensa'],
+  71: ['🌨️', 'Neve debole'], 73: ['🌨️', 'Neve'], 75: ['❄️', 'Neve intensa'],
+  80: ['🌦️', 'Rovesci deboli'], 81: ['🌧️', 'Rovesci'], 82: ['⛈️', 'Rovesci forti'],
+  95: ['⛈️', 'Temporale'], 96: ['⛈️', 'Temporale con grandine'], 99: ['⛈️', 'Temporale forte con grandine'],
+};
+function descrizioneMeteo(codice) { return METEO_WMO[codice] || ['❔', 'Non disponibile']; }
+
+// ============================================================
+// STATO DEL SENTIERO — campo curato manualmente (capogruppo/admin)
+// ============================================================
+const STATO_SENTIERO_OPZIONI = [
+  { key: 'aperto',     label: '🟢 Aperto / condizioni regolari' },
+  { key: 'attenzione', label: '🟡 Attenzione / tratti difficoltosi' },
+  { key: 'chiuso',     label: '🔴 Chiuso / impraticabile' },
 ];

@@ -2,11 +2,12 @@
 
 PWA offline-first per la pianificazione di escursioni di gruppo tra amici:
 percorsi e itinerari, attrezzatura, equipaggiamento condiviso, gestione
-gruppo e sicurezza.
+gruppo e sicurezza — con sincronizzazione di gruppo facoltativa (chat,
+posizione live, notifiche push) tramite un Worker Cloudflare separato.
 
 | | |
 |---|---|
-| **Versione** | 1.2 |
+| **Versione** | 1.4 |
 | **Autore** | Lazzaro Serva — [graficaesiti.it](http://www.graficaesiti.it/) |
 | **Licenza** | Privata — Tutti i diritti riservati |
 | **Tecnologie** | HTML5, CSS3, JavaScript vanilla, IndexedDB, Service Worker, Leaflet |
@@ -20,7 +21,8 @@ trekking/
 ├── config.js               ← flag di configurazione (SYNC_ENABLED, ruoli...)
 ├── storage.js              ← livello di persistenza IndexedDB, sync-ready
 ├── app.js                  ← logica applicativa (percorsi, attrezzatura, gruppo, impostazioni)
-├── service-worker.js       ← cache offline, banner di aggiornamento
+├── sync.js                  ← comunicazione con il Worker Cloudflare (chat, posizione, push)
+├── service-worker.js       ← cache offline, banner di aggiornamento, notifiche push
 ├── manifest.json            ← configurazione PWA
 ├── monitoraggio.html        ← pagina statica di sola lettura per il link "resto a casa"
 ├── assets/
@@ -48,7 +50,20 @@ trekking/
 - **Equipaggiamento richiesto**: personale obbligatorio/consigliato, di
   gruppo condiviso, emergenza — con assegnazione "chi porta cosa".
 - **Gruppo**: partecipanti, ruoli, stato presenza, punto di ritrovo,
-  bacheca avvisi locale, SOS con coordinate GPS via SMS.
+  bacheca/chat, SOS con coordinate GPS via SMS, calcolatore peso zaino,
+  link di monitoraggio per chi resta a casa.
+- **Sincronizzazione di gruppo (facoltativa)**: chat in tempo reale,
+  posizione GPS live dei partecipanti e notifiche push (Web Push
+  standard, VAPID), tramite il Worker Cloudflare in
+  `/trekking-sync-worker` (progetto separato — vedi il suo README per il
+  deploy). Disattivata di default: senza configurarla, tutto resta
+  locale come nelle versioni precedenti.
+- **Meteo automatico**: previsioni giornaliere per data e luogo di
+  partenza (o coordinate della traccia GPX), tramite il servizio
+  gratuito Open-Meteo (nessuna chiave API richiesta).
+- **Stato del sentiero**: badge aperto/attenzione/chiuso con note,
+  curato manualmente da chi organizza; se la sincronizzazione di gruppo
+  è attiva, aggiornarlo avvisa subito tutto il gruppo.
 - **Offline-first**: tutti i dati restano sul dispositivo (IndexedDB),
   Service Worker cache-first, nessun account richiesto.
 - **Splash screen** animato (~3s) con dati fissi dell'autore, set icone
@@ -57,10 +72,11 @@ trekking/
 
 ## Roadmap (fase successiva)
 
-- Sincronizzazione cloud multi-dispositivo tramite Worker Cloudflare +
-  storage KV/D1 (schema già predisposto, vedi `ARCHITETTURA-SYNC.md`)
-- Pannello amministratore (ruolo `admin` già previsto nel modello dati)
-- Notifiche push da backend, posizione live condivisa tra i partecipanti
+- Pannello amministratore per il Worker (ruolo `admin` già previsto nel
+  modello dati) — moderazione chat, invio avvisi broadcast senza passare
+  da un messaggio.
+- Storage D1 (relazionale) al posto del solo KV, se il volume di dati
+  dovesse crescere oltre un uso "gruppo di amici".
 
 ## Deploy
 
@@ -70,6 +86,9 @@ siano serviti dalla root dello scope dell'app.
 
 ## Privacy
 
-Nessun dato lascia il dispositivo in questa versione. Dettagli completi
-nel manuale d'uso in-app (pulsante ❓) e in `ARCHITETTURA-SYNC.md` per la
-fase di sincronizzazione futura.
+Per impostazione predefinita nessun dato lascia il dispositivo. Se la
+sincronizzazione di gruppo viene attivata (facoltativa, escursione per
+escursione), messaggi chat, posizione GPS live e registrazione notifiche
+push vengono inviati al Worker Cloudflare configurato. Dettagli completi
+nel manuale d'uso in-app (pulsante ❓), in `ARCHITETTURA-SYNC.md` e nel
+README di `/trekking-sync-worker`.

@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.2 — app.js
+// Trekking v1.4 — app.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -22,7 +22,11 @@ let state = {
   equipaggiamento: [],
   waypoints: [],
   settings: { tema: 'giorno', fontScale: 'normale' },
+  sync: { partecipanteId: null, nomeLocale: '', messaggi: [], posizioni: [], ultimoPoll: 0, condividoPosizione: false, pushAttivo: false },
 };
+
+let syncPollTimer = null;
+let posizioneWatchId = null;
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -34,6 +38,9 @@ async function initApp() {
   state.settings.tema = await settingGet('tema', 'giorno');
   state.settings.fontScale = await settingGet('fontScale', 'normale');
   applyTheme();
+
+  state.sync.partecipanteId = await getPartecipanteIdLocale();
+  state.sync.nomeLocale = await getNomeLocale();
 
   state.escursioni = await dbGetAll(STORES.escursioni);
   state.escursioni.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
@@ -77,6 +84,7 @@ function bindNav() {
 }
 
 function render() {
+  fermaSyncPolling();
   const main = $('#main');
   main.innerHTML = '';
   if (state.view === 'percorsi') renderPercorsi(main);
@@ -141,6 +149,8 @@ function renderEscursioneDettaglioHtml(e) {
         <span>📏 ${esc(e.lunghezzaKm || '-')} km</span>
       </div>
       ${meteoInfo}
+      ${renderMeteoBoxHtml(e)}
+      ${renderStatoSentieroBoxHtml(e)}
       <div id="mapPreview" class="map-preview">${e.tracciaGpx ? '<div id="leafletMap"></div>' : '<p class="empty-hint">Nessuna traccia GPX importata.</p>'}</div>
       ${e.tracciaGpx ? '<div class="elevation-box"><canvas id="elevationChart" height="90"></canvas></div>' : ''}
       <div class="ed-actions">
@@ -154,6 +164,122 @@ function renderEscursioneDettaglioHtml(e) {
       ${renderWaypointsListHtml()}
     </div>
   `;
+}
+
+// ============================================================
+// METEO AUTOMATICO (Open-Meteo, geocoding + previsioni giornaliere)
+// ============================================================
+function renderMeteoBoxHtml(e) {
+  const cache = e.meteoCache;
+  if (!cache || !cache.giorno) {
+    return `
+      <div class="meteo-box" id="meteoBox">
+        <button class="btn-secondary" id="btnAggiornaMeteo">🌦️ Scarica previsioni meteo</button>
+        <p class="hint">Richiede una connessione internet al momento della richiesta. Usa il nome del luogo di partenza (o la traccia GPX, se già importata) per individuare le coordinate.</p>
+      </div>`;
+  }
+  const [icona, testo] = descrizioneMeteo(cache.giorno.codice);
+  const vecchia = (Date.now() - cache.ts) > METEO_CACHE_ORE * 3600 * 1000;
+  return `
+    <div class="meteo-box" id="meteoBox">
+      <div class="meteo-oggi">
+        <span class="meteo-icona">${icona}</span>
+        <div>
+          <strong>${esc(testo)}</strong>
+          <div class="meteo-dettagli">🌡 ${cache.giorno.tempMin}° / ${cache.giorno.tempMax}°C · 🌧 ${cache.giorno.pioggiaMm} mm · 💨 ${cache.giorno.ventoMax} km/h</div>
+          <div class="meteo-data">Previsione per ${esc(cache.giorno.data)} — ${esc(cache.luogo || '')}${vecchia ? ' · <span class="meteo-stantia">dati non aggiornati di recente</span>' : ''}</div>
+        </div>
+      </div>
+      <button class="btn-link" id="btnAggiornaMeteo">🔄 Aggiorna previsioni</button>
+    </div>`;
+}
+
+async function aggiornaMeteo(e) {
+  try {
+    let lat = e.meteoCache?.lat, lon = e.meteoCache?.lon, luogo = e.meteoCache?.luogo;
+
+    // Preferisci le coordinate del primo punto della traccia GPX, se presente.
+    if (e.tracciaGpx) {
+      const punti = JSON.parse(e.tracciaGpx);
+      if (punti.length) { lat = punti[0].lat; lon = punti[0].lon; luogo = e.partenza || 'Punto di partenza traccia'; }
+    }
+    if ((lat === undefined || lon === undefined) && e.partenza) {
+      const res = await fetch(`${GEOCODING_API_URL}?name=${encodeURIComponent(e.partenza)}&count=1&language=it&format=json`);
+      if (!res.ok) throw new Error('Geocoding non riuscito.');
+      const json = await res.json();
+      if (!json.results || !json.results.length) throw new Error(`Località "${e.partenza}" non trovata.`);
+      lat = json.results[0].latitude; lon = json.results[0].longitude;
+      luogo = [json.results[0].name, json.results[0].admin1].filter(Boolean).join(', ');
+    }
+    if (lat === undefined || lon === undefined) throw new Error('Inserisci un luogo di partenza o importa una traccia GPX.');
+
+    const data = e.data || new Date().toISOString().slice(0, 10);
+    const url = `${METEO_API_URL}?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto&start_date=${data}&end_date=${data}`;
+    const res2 = await fetch(url);
+    if (!res2.ok) throw new Error('Servizio meteo non raggiungibile.');
+    const meteo = await res2.json();
+    if (!meteo.daily || !meteo.daily.time || !meteo.daily.time.length) throw new Error('Nessuna previsione disponibile per questa data (oltre 16 giorni?).');
+
+    e.meteoCache = {
+      lat, lon, luogo, ts: Date.now(),
+      giorno: {
+        data: meteo.daily.time[0],
+        codice: meteo.daily.weathercode[0],
+        tempMin: Math.round(meteo.daily.temperature_2m_min[0]),
+        tempMax: Math.round(meteo.daily.temperature_2m_max[0]),
+        pioggiaMm: meteo.daily.precipitation_sum[0],
+        ventoMax: Math.round(meteo.daily.windspeed_10m_max[0]),
+      },
+    };
+    await dbSave(STORES.escursioni, e);
+    render();
+  } catch (err) {
+    alert('Impossibile aggiornare il meteo: ' + err.message);
+  }
+}
+
+// ============================================================
+// STATO DEL SENTIERO — curato manualmente, con badge colorato
+// ============================================================
+function renderStatoSentieroBoxHtml(e) {
+  const s = e.statoSentiero;
+  const opz = STATO_SENTIERO_OPZIONI.find(o => o.key === (s?.categoria || 'aperto')) || STATO_SENTIERO_OPZIONI[0];
+  return `
+    <div class="stato-sentiero-box stato-${s?.categoria || 'aperto'}">
+      <div class="ss-head">
+        <span class="ss-badge">${opz.label}</span>
+        <button class="btn-link" id="btnModificaStatoSentiero">✏️ Aggiorna</button>
+      </div>
+      ${s?.nota ? `<p class="ss-nota">${esc(s.nota)}</p>` : ''}
+      ${s?.aggiornatoIl ? `<p class="ss-data">Aggiornato il ${new Date(s.aggiornatoIl).toLocaleString('it-IT')}${s.aggiornatoDa ? ' da ' + esc(s.aggiornatoDa) : ''}</p>` : ''}
+    </div>`;
+}
+
+function apriModalStatoSentiero(e) {
+  apriModal('🚧 Stato del sentiero', `
+    <label>Stato</label>
+    <select id="fSSCategoria">${STATO_SENTIERO_OPZIONI.map(o => `<option value="${o.key}" ${e.statoSentiero?.categoria === o.key ? 'selected' : ''}>${o.label}</option>`).join('')}</select>
+    <label>Note (opzionale)</label>
+    <textarea id="fSSNota" placeholder="es. frana al km 3, deviazione segnalata">${esc(e.statoSentiero?.nota || '')}</textarea>
+    ${syncAttivaPer(e) ? '<p class="hint">🔔 Salvando, verrà inviato automaticamente un avviso urgente (push) a tutto il gruppo.</p>' : ''}
+    <button class="btn-primary" id="btnSalvaStatoSentiero">Salva</button>
+  `);
+  $('#btnSalvaStatoSentiero').addEventListener('click', async () => {
+    const categoria = $('#fSSCategoria').value;
+    const nota = $('#fSSNota').value.trim();
+    e.statoSentiero = { categoria, nota, aggiornatoIl: Date.now(), aggiornatoDa: state.sync.nomeLocale || 'Tu' };
+    await dbSave(STORES.escursioni, e);
+    if (syncAttivaPer(e)) {
+      const opz = STATO_SENTIERO_OPZIONI.find(o => o.key === categoria);
+      const testo = `Stato sentiero aggiornato: ${opz.label}${nota ? ' — ' + nota : ''}`;
+      try {
+        await syncInviaMessaggio(e.codiceGruppo, { id: uuid(), autore: state.sync.nomeLocale || 'Anonimo', testo, urgente: true });
+        await dbSave(STORES.bacheca, { id: uuid(), escursioneId: e.id, testo, data: Date.now(), autore: state.sync.nomeLocale || 'Tu' });
+      } catch (err) { /* stato salvato comunque in locale; l'avviso al gruppo verrà ritentato al prossimo aggiornamento manuale */ }
+    }
+    chiudiModal();
+    render();
+  });
 }
 
 function renderWaypointsListHtml() {
@@ -179,6 +305,8 @@ function bindEscursioneDettaglio(e) {
   $('#btnDownloadOffline').addEventListener('click', () => scaricaOffline(e));
   $('#btnCondividiEscursione').addEventListener('click', () => condividiEscursione(e));
   $('#btnAggiungiWaypoint').addEventListener('click', () => apriModalWaypoint(e));
+  $('#btnAggiornaMeteo').addEventListener('click', () => aggiornaMeteo(e));
+  $('#btnModificaStatoSentiero').addEventListener('click', () => apriModalStatoSentiero(e));
   $('#btnVaiEquipaggiamento').addEventListener('click', () => {
     state.view = 'attrezzatura';
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === 'attrezzatura'));
@@ -671,11 +799,16 @@ function renderGruppo(main) {
     return;
   }
 
+  const sincronizzato = syncAttivaPer(attiva);
+
   wrap.innerHTML = `
     <div class="section-head">
       <h2>👥 Gruppo — ${esc(attiva.nome)}</h2>
       <button class="btn-primary" id="btnAggiungiPartecipante">+ Partecipante</button>
     </div>
+
+    ${renderSyncBoxHtml(attiva, sincronizzato)}
+
     <ul class="partecipanti-list">
       ${state.partecipanti.map(p => `
         <li data-id="${p.id}">
@@ -698,11 +831,16 @@ function renderGruppo(main) {
       <button class="btn-secondary" id="btnSalvaRitrovo">Salva</button>
     </div>
 
-    <div class="section-head"><h3>📣 Bacheca avvisi</h3></div>
+    ${sincronizzato ? renderPosizioneLiveBoxHtml(attiva) : ''}
+
+    <div class="section-head"><h3>${sincronizzato ? '💬 Chat del gruppo' : '📣 Bacheca avvisi'}</h3></div>
     <div class="bacheca-box">
-      <textarea id="fAvviso" placeholder="Scrivi un avviso per il gruppo (cambio orario, meteo, modifiche percorso)…"></textarea>
-      <button class="btn-secondary" id="btnPubblicaAvviso">Pubblica</button>
-      <p class="hint-sync">📡 In V1.0 la bacheca resta locale sul tuo dispositivo. Con la sincronizzazione cloud (in arrivo) sarà condivisa in tempo reale con tutto il gruppo.</p>
+      <textarea id="fAvviso" placeholder="${sincronizzato ? 'Scrivi un messaggio per il gruppo…' : 'Scrivi un avviso per il gruppo (cambio orario, meteo, modifiche percorso)…'}"></textarea>
+      ${sincronizzato ? '<label class="checkbox-line"><input type="checkbox" id="fUrgente"> ⚠️ Urgente (invia anche una notifica push a tutto il gruppo)</label>' : ''}
+      <button class="btn-secondary" id="btnPubblicaAvviso">${sincronizzato ? 'Invia' : 'Pubblica'}</button>
+      ${sincronizzato
+        ? `<div class="sync-poll-row"><button class="btn-link" id="btnRefreshChat">🔄 Aggiorna ora</button><span class="hint-sync" id="chatStatoSync"></span></div>`
+        : '<p class="hint-sync">📡 Nessuna sincronizzazione attiva: la bacheca resta solo su questo dispositivo. Attivala qui sopra per condividerla in tempo reale con il gruppo.</p>'}
       <ul class="bacheca-list" id="bachecaList"></ul>
     </div>
 
@@ -732,13 +870,184 @@ function renderGruppo(main) {
   $('#btnPubblicaAvviso').addEventListener('click', async () => {
     const testo = $('#fAvviso').value.trim();
     if (!testo) return;
-    await dbSave(STORES.bacheca, { id: uuid(), escursioneId: attiva.id, testo, data: Date.now() });
+    const urgente = sincronizzato && $('#fUrgente') ? $('#fUrgente').checked : false;
+    await dbSave(STORES.bacheca, { id: uuid(), escursioneId: attiva.id, testo, data: Date.now(), autore: state.sync.nomeLocale || 'Tu' });
     $('#fAvviso').value = '';
+    if (sincronizzato) {
+      try {
+        await syncInviaMessaggio(attiva.codiceGruppo, { id: uuid(), autore: state.sync.nomeLocale || 'Anonimo', testo, urgente });
+      } catch (err) {
+        alert('Messaggio salvato solo in locale: impossibile contattare il Worker (' + err.message + ').');
+      }
+      await aggiornaSyncGruppo(attiva, true);
+    }
     caricaBacheca(attiva.id);
   });
   $('#btnSOS').addEventListener('click', inviaSOS);
   $('#btnLinkMonitoraggio').addEventListener('click', () => generaLinkMonitoraggio(attiva));
+  bindSyncBox(attiva);
+  if (sincronizzato) {
+    bindPosizioneLiveBox(attiva);
+    $('#btnRefreshChat').addEventListener('click', () => aggiornaSyncGruppo(attiva, true));
+    avviaSyncPolling(attiva);
+  }
   caricaBacheca(attiva.id);
+}
+
+// ============================================================
+// SINCRONIZZAZIONE DI GRUPPO (Worker Cloudflare) — attivazione,
+// chat in tempo reale, posizione live, notifiche push.
+// ============================================================
+function renderSyncBoxHtml(attiva, sincronizzato) {
+  if (!SYNC_ENABLED) return '';
+  if (!sincronizzato) {
+    return `
+      <div class="sync-box">
+        <h3>🔄 Sincronizzazione di gruppo</h3>
+        <p class="hint">Attivala per condividere in tempo reale chat, posizione live e notifiche push con chi partecipa a questa escursione. Richiede rete al momento dell'attivazione e dell'invio; i dati (messaggi, posizione GPS) vengono inviati al Worker e restano leggibili a chiunque conosca il codice gruppo.</p>
+        <button class="btn-primary" id="btnAttivaSync">🔄 Attiva sincronizzazione</button>
+      </div>`;
+  }
+  return `
+    <div class="sync-box sync-box-attiva">
+      <h3>🔄 Sincronizzazione attiva</h3>
+      <p class="hint">Codice gruppo: <strong class="codice-gruppo">${esc(attiva.codiceGruppo)}</strong> — condividilo con chi partecipa perché possa collegarsi.</p>
+      <div class="sync-box-actions">
+        <button class="btn-secondary" id="btnCondividiCodice">🔗 Condividi codice</button>
+        <button class="btn-secondary" id="btnAttivaPush">🔔 Notifiche push</button>
+      </div>
+    </div>`;
+}
+
+function bindSyncBox(attiva) {
+  const btnAttiva = $('#btnAttivaSync');
+  if (btnAttiva) {
+    btnAttiva.addEventListener('click', async () => {
+      let nome = state.sync.nomeLocale;
+      if (!nome) {
+        nome = prompt('Come vuoi essere identificato/a nel gruppo?', '') || '';
+        if (!nome.trim()) { alert('Inserisci un nome per continuare.'); return; }
+        state.sync.nomeLocale = nome.trim();
+        await setNomeLocale(state.sync.nomeLocale);
+      }
+      const codice = generaCodiceGruppo();
+      try {
+        await syncJoin(codice, state.sync.partecipanteId, state.sync.nomeLocale);
+      } catch (err) {
+        alert('Impossibile contattare il Worker: verifica API_BASE_URL in config.js e la connessione. (' + err.message + ')');
+        return;
+      }
+      attiva.codiceGruppo = codice;
+      await dbSave(STORES.escursioni, attiva);
+      render();
+    });
+  }
+  const btnCondividi = $('#btnCondividiCodice');
+  if (btnCondividi) {
+    btnCondividi.addEventListener('click', () => {
+      const testo = `Unisciti al gruppo "${attiva.nome}" su Trekking: codice ${attiva.codiceGruppo}`;
+      if (navigator.share) navigator.share({ text: testo }).catch(() => {});
+      else navigator.clipboard.writeText(testo).then(() => alert('Codice copiato negli appunti.'));
+    });
+  }
+  const btnPush = $('#btnAttivaPush');
+  if (btnPush) {
+    btnPush.addEventListener('click', async () => {
+      try {
+        await attivaPushPerGruppo(attiva.codiceGruppo, state.sync.partecipanteId);
+        state.sync.pushAttivo = true;
+        alert('Notifiche push attivate per questo gruppo.');
+      } catch (err) {
+        alert('Impossibile attivare le notifiche: ' + err.message);
+      }
+    });
+  }
+}
+
+function renderPosizioneLiveBoxHtml(attiva) {
+  const altre = state.sync.posizioni.filter(p => p.partecipanteId !== state.sync.partecipanteId);
+  return `
+    <div class="section-head"><h3>📡 Posizione live</h3></div>
+    <div class="posizione-live-box">
+      <label class="checkbox-line">
+        <input type="checkbox" id="fCondividiPosizione" ${state.sync.condividoPosizione ? 'checked' : ''}>
+        Condividi la mia posizione con il gruppo durante l'escursione
+      </label>
+      <p class="hint">Invia le tue coordinate ogni circa 30 secondi finché questa casella resta attiva e l'app è aperta. Le posizioni scadono da sole dopo 4 ore.</p>
+      <ul class="posizioni-list" id="posizioniLiveList">
+        ${altre.map(p => `<li>${esc(p.nome)} — aggiornato ${Math.round((Date.now() - p.ts) / 60000)} min fa</li>`).join('') || '<li class="empty-hint">Nessuna posizione condivisa dal gruppo per ora.</li>'}
+      </ul>
+    </div>`;
+}
+
+function bindPosizioneLiveBox(attiva) {
+  const chk = $('#fCondividiPosizione');
+  if (!chk) return;
+  chk.addEventListener('change', () => {
+    state.sync.condividoPosizione = chk.checked;
+    if (chk.checked) avviaCondivisionePosizione(attiva);
+    else fermaCondivisionePosizione();
+  });
+  if (state.sync.condividoPosizione) avviaCondivisionePosizione(attiva);
+}
+
+function avviaCondivisionePosizione(attiva) {
+  if (!navigator.geolocation || posizioneWatchId !== null) return;
+  posizioneWatchId = navigator.geolocation.watchPosition(async (pos) => {
+    try {
+      await syncInviaPosizione(attiva.codiceGruppo, {
+        partecipanteId: state.sync.partecipanteId,
+        nome: state.sync.nomeLocale || 'Anonimo',
+        lat: pos.coords.latitude, lon: pos.coords.longitude,
+      });
+    } catch (_) { /* riprova al prossimo aggiornamento di posizione */ }
+  }, () => { /* permesso negato o GPS non disponibile: la casella resta spuntata, riprova da sola */ },
+  { enableHighAccuracy: true, maximumAge: 25000, timeout: 20000 });
+}
+function fermaCondivisionePosizione() {
+  if (posizioneWatchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(posizioneWatchId);
+    posizioneWatchId = null;
+  }
+}
+
+// ── Polling periodico (chat + posizioni) mentre la vista Gruppo è aperta ──
+function avviaSyncPolling(attiva) {
+  aggiornaSyncGruppo(attiva, false);
+  syncPollTimer = setInterval(() => aggiornaSyncGruppo(attiva, false), SYNC_POLL_MS);
+}
+function fermaSyncPolling() {
+  if (syncPollTimer) { clearInterval(syncPollTimer); syncPollTimer = null; }
+}
+
+async function aggiornaSyncGruppo(attiva, forzaIndicatore) {
+  const stato = $('#chatStatoSync');
+  if (stato && forzaIndicatore) stato.textContent = '⏳ Aggiornamento…';
+  try {
+    const [nuoviMessaggi, posizioni] = await Promise.all([
+      syncFetchMessaggi(attiva.codiceGruppo, state.sync.ultimoPoll),
+      syncFetchPosizioni(attiva.codiceGruppo),
+    ]);
+    state.sync.posizioni = posizioni;
+    if (nuoviMessaggi.length) {
+      state.sync.ultimoPoll = Math.max(...nuoviMessaggi.map(m => m.data));
+      // I messaggi arrivati dal Worker (anche da altri dispositivi) vengono
+      // salvati anche in locale, così restano leggibili offline.
+      for (const m of nuoviMessaggi) {
+        if (m.autore === (state.sync.nomeLocale || 'Anonimo')) continue; // già salvato localmente all'invio
+        await dbSave(STORES.bacheca, { id: m.id, escursioneId: attiva.id, testo: m.testo, autore: m.autore, data: m.data });
+      }
+      caricaBacheca(attiva.id);
+    }
+    const listaPos = $('#posizioniLiveList');
+    if (listaPos) {
+      const altre = posizioni.filter(p => p.partecipanteId !== state.sync.partecipanteId);
+      listaPos.innerHTML = altre.map(p => `<li>${esc(p.nome)} — aggiornato ${Math.round((Date.now() - p.ts) / 60000)} min fa</li>`).join('') || '<li class="empty-hint">Nessuna posizione condivisa dal gruppo per ora.</li>';
+    }
+    if (stato) stato.textContent = '✅ Aggiornato ' + new Date().toLocaleTimeString('it-IT');
+  } catch (err) {
+    if (stato) stato.textContent = '⚠️ Worker non raggiungibile';
+  }
 }
 
 // ============================================================
@@ -814,7 +1123,7 @@ async function caricaBacheca(escursioneId) {
   voci.sort((a, b) => b.data - a.data);
   const list = $('#bachecaList');
   if (!list) return;
-  list.innerHTML = voci.map(v => `<li>${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></li>`).join('');
+  list.innerHTML = voci.map(v => `<li>${v.autore ? `<strong>${esc(v.autore)}:</strong> ` : ''}${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></li>`).join('');
 }
 
 function apriModalPartecipante() {
@@ -887,7 +1196,10 @@ function renderImpostazioni(main) {
 
     <div class="settings-block">
       <h3>☁️ Sincronizzazione cloud</h3>
-      <p class="hint-sync">Non ancora attiva in questa versione (V1.0). Tutti i dati restano solo su questo dispositivo. La sincronizzazione tra i membri del gruppo — tramite Worker Cloudflare e un pannello amministratore — arriverà in una versione successiva.</p>
+      ${SYNC_ENABLED
+        ? `<p class="hint-sync">Sincronizzazione configurata (Worker: <code>${esc(API_BASE_URL)}</code>). Attivala per una singola escursione dalla sezione Gruppo: genera un codice da condividere con i partecipanti per chat, posizione live e notifiche push.</p>`
+        : '<p class="hint-sync">Non ancora configurata su questo deploy. Per attivarla, distribuisci il Worker in <code>/trekking-sync-worker</code> e imposta <code>SYNC_ENABLED</code>, <code>API_BASE_URL</code> e <code>VAPID_PUBLIC_KEY</code> in config.js (vedi il README del Worker).</p>'}
+      ${state.sync.nomeLocale ? `<p class="hint-sync">Il tuo nome nel gruppo: <strong>${esc(state.sync.nomeLocale)}</strong>. <button class="btn-link" id="btnCambiaNomeLocale">cambia</button></p>` : ''}
     </div>
 
     <div class="settings-block">
@@ -959,6 +1271,16 @@ function renderImpostazioni(main) {
     location.reload();
   });
   $('#btnManuale').addEventListener('click', apriManuale);
+  const btnCambiaNome = $('#btnCambiaNomeLocale');
+  if (btnCambiaNome) {
+    btnCambiaNome.addEventListener('click', async () => {
+      const nome = prompt('Il tuo nome nel gruppo:', state.sync.nomeLocale) || '';
+      if (!nome.trim()) return;
+      state.sync.nomeLocale = nome.trim();
+      await setNomeLocale(state.sync.nomeLocale);
+      render();
+    });
+  }
 }
 
 // ============================================================

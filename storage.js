@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.2 — storage.js (livello di persistenza)
+// Trekking v1.4 — storage.js (livello di persistenza)
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -162,7 +162,7 @@ async function exportAllData() {
     dbGetAll(STORES.waypoints),
   ]);
   return {
-    app: 'trekking', versione: '1.2', esportatoIl: new Date().toISOString(),
+    app: 'trekking', versione: '1.4', esportatoIl: new Date().toISOString(),
     escursioni, partecipanti, equipaggiamento, bacheca, waypoints,
   };
 }

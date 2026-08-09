@@ -1,5 +1,40 @@
 Trekking — Changelog
 
+v1.4 — agosto 2026
+- Meteo automatico: previsioni giornaliere (Open-Meteo, gratuito, senza
+  chiave API) per la data e il luogo di partenza dell'escursione, con
+  geocoding automatico del nome del luogo o, se disponibile, delle
+  coordinate del primo punto della traccia GPX importata. Pulsante
+  "Aggiorna previsioni" per rinnovarle manualmente.
+- Stato del sentiero: campo curato manualmente (aperto/attenzione/chiuso
+  + note), con badge colorato nella scheda escursione. Se la
+  sincronizzazione di gruppo è attiva, aggiornarlo invia automaticamente
+  un avviso urgente (push) a tutto il gruppo.
+- config.js: nuove costanti GEOCODING_API_URL, METEO_API_URL,
+  METEO_CACHE_ORE, METEO_WMO, STATO_SENTIERO_OPZIONI.
+- manifest.json, service-worker.js (CACHE_NAME → v1.4) e manuale d'uso
+  in-app aggiornati.
+
+v1.3 — agosto 2026
+- Sincronizzazione di gruppo (facoltativa, richiede il Worker Cloudflare
+  separato in /trekking-sync-worker): chat in tempo reale al posto della
+  bacheca locale (polling ogni 15s), posizione GPS live dei partecipanti,
+  notifiche push standard (Web Push/VAPID, cifratura aes128gcm implementata
+  con WebCrypto senza dipendenze esterne). Attivabile per singola
+  escursione dalla sezione Gruppo tramite un codice gruppo generato
+  dall'app (nessun account/login).
+- Nuovo modulo client sync.js: identità locale del dispositivo, join al
+  gruppo, invio/lettura messaggi e posizioni, sottoscrizione push.
+- service-worker.js: gestione degli eventi push e notificationclick,
+  CACHE_NAME → v1.3, sync.js incluso in cache.
+- config.js: nuovi flag SYNC_ENABLED, API_BASE_URL, VAPID_PUBLIC_KEY,
+  SYNC_POLL_MS, POSIZIONE_STANTIA_MIN (sincronizzazione disattivata di
+  default: senza configurarla, l'app resta 100% locale come prima).
+- Manuale d'uso, README e ARCHITETTURA-SYNC.md aggiornati con la
+  descrizione della sincronizzazione realmente implementata (rispetto al
+  piano originale: storage solo KV, niente D1; polling invece di
+  Background Sync).
+
 v1.2 — agosto 2026
 - Calcolatore peso zaino: peso personale stimato per partecipante (impostabile
   alla creazione) + peso di ogni voce di equipaggiamento di gruppo assegnata
