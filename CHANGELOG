@@ -1,5 +1,31 @@
 Trekking — Changelog
 
+v1.2 — agosto 2026
+- Calcolatore peso zaino: peso personale stimato per partecipante (impostabile
+  alla creazione) + peso di ogni voce di equipaggiamento di gruppo assegnata
+  (campo "kg" accanto all'assegnazione "chi porta cosa"). La sezione
+  "⚖️ Peso zaino" in Gruppo somma i due valori per persona e segnala uno
+  sbilanciamento del carico oltre i 3 kg tra il più carico e il meno carico.
+- Itinerari predefiniti: libreria curata di 4 percorsi consigliati (zona
+  Cilento), accessibile da "📚 Itinerari predefiniti" in Percorsi. "Usa
+  questo percorso" clona i dati in una nuova escursione modificabile
+  (checklist intelligente generata automaticamente come per le escursioni
+  create da zero).
+- Profilo altimetrico grafico: dopo l'importazione di un GPX, un grafico a
+  canvas mostra l'andamento della quota lungo il percorso con i valori
+  minimo/massimo, sotto la mappa interattiva.
+- Punti d'interesse (waypoint) sulla mappa: nuova categoria di dati (store
+  IndexedDB dedicato) per segnare fonti d'acqua, rifugi, punti panoramici e
+  pericoli/vie di fuga, con coordinate manuali o "usa posizione attuale".
+  Compaiono come marker sulla mappa Leaflet e in un elenco nella scheda
+  dell'escursione; inclusi in export/import JSON.
+- Link di monitoraggio "resto a casa": nuova pagina statica
+  `monitoraggio.html`, di sola lettura e senza backend, che mostra
+  itinerario, punto di ritrovo e partecipanti a partire da un link generato
+  dal pulsante "🔗 Link monitoraggio" nella sezione Gruppo.
+- Manuale d'uso, README e Service Worker aggiornati per le nuove
+  funzionalità (CACHE_NAME → v1.2, `monitoraggio.html` incluso in cache).
+
 v1.1 — luglio 2026
 - Rinumerazione di versione da 1.0.1 a 1.1 (schema di versionamento più
   semplice da comunicare e da verificare in fase di aggiornamento app).

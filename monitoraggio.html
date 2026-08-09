@@ -1,0 +1,133 @@
+<!--
+  ============================================================
+  Trekking v1.2 — monitoraggio.html (pagina di sola lettura)
+  Copyright (c) 2026 Lazzaro Serva - Centola
+  Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
+  http://www.graficaesiti.it/
+  Tutti i diritti riservati – All rights reserved.
+  Vietata riproduzione, modifica e distribuzione senza
+  autorizzazione scritta del titolare del copyright.
+
+  Pagina generata dal pulsante "🔗 Link monitoraggio" dell'app
+  Trekking: mostra un riepilogo di sola lettura dell'escursione a
+  chi resta a casa. Tutti i dati sono contenuti nel parametro "d"
+  dell'URL (base64), non c'è alcuna connessione a server esterni.
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Monitoraggio escursione — Trekking</title>
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+<meta name="theme-color" content="#2e5339">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2e5339; --primary-l: #4c7a52; --primary-d: #1d3a26;
+    --accent: #f4a93b; --bg: #eaf1e8; --surface: #ffffff; --surface2: #f4f8f2;
+    --text: #17281c; --text2: #445446; --border: #cfe0cd;
+    --radius: 16px; --radius-s: 10px; --shadow: 0 3px 12px rgba(29,58,38,.15);
+    --font: 'Nunito', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--font); background: var(--bg); color: var(--text);
+    min-height: 100dvh; padding: 20px 16px 40px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .top-badge {
+    display: flex; align-items: center; gap: 10px; color: var(--primary-d);
+    font-weight: 800; font-size: 15px; margin-bottom: 16px;
+  }
+  .top-badge .ico { font-size: 24px; }
+  .card {
+    background: var(--surface); border-radius: var(--radius); padding: 18px;
+    box-shadow: var(--shadow); margin-bottom: 14px;
+  }
+  .card h1 { font-size: 22px; margin: 0 0 4px; }
+  .badge {
+    display: inline-block; border-radius: 20px; padding: 4px 10px; font-size: 13px;
+    font-weight: 800; background: var(--accent); color: #3a2400; margin-top: 4px;
+  }
+  .meta-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 0; font-size: 14px; color: var(--text2); }
+  .meta-grid span { background: var(--surface2); border-radius: var(--radius-s); padding: 6px 10px; }
+  .section-title { font-size: 15px; font-weight: 800; color: var(--primary-d); margin: 18px 0 8px; }
+  .ritrovo-line { font-size: 15px; }
+  ul.partecipanti { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  ul.partecipanti li {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    padding: 5px 12px; font-size: 13px; font-weight: 700;
+  }
+  .note-box {
+    background: #fff3e0; border: 1.5px solid #ffb74d; border-radius: 10px;
+    padding: 10px 13px; font-size: 13px; color: #7c3e00; line-height: 1.5; margin-top: 16px;
+  }
+  .generato { font-size: 12px; color: var(--text2); margin-top: 18px; text-align: center; }
+  .errore { text-align: center; color: var(--text2); padding: 40px 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-badge"><span class="ico">🏔️</span> Trekking — Monitoraggio escursione</div>
+  <div id="content"></div>
+</div>
+
+<script>
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function render() {
+    const params = new URLSearchParams(location.search);
+    const b64 = params.get('d');
+    const content = document.getElementById('content');
+    if (!b64) {
+      content.innerHTML = '<div class="errore">Nessun dato di monitoraggio nel link.<br>Chiedi a chi ha condiviso il link di inviartelo di nuovo.</div>';
+      return;
+    }
+    let d;
+    try {
+      d = JSON.parse(decodeURIComponent(escape(atob(b64))));
+    } catch (err) {
+      content.innerHTML = '<div class="errore">Il link non è valido o è danneggiato.</div>';
+      return;
+    }
+    content.innerHTML = `
+      <div class="card">
+        <h1>${esc(d.nome || 'Escursione')}</h1>
+        ${d.difficolta ? `<span class="badge">${esc(d.difficolta)}</span>` : ''}
+        <div class="meta-grid">
+          <span>📍 ${esc(d.partenza || '-')} → ${esc(d.arrivo || '-')}</span>
+          ${d.data ? `<span>📅 ${esc(d.data)}</span>` : ''}
+          ${d.durataStimata ? `<span>⏱ ${esc(d.durataStimata)}</span>` : ''}
+          ${d.lunghezzaKm ? `<span>📏 ${esc(d.lunghezzaKm)} km</span>` : ''}
+          ${d.dislivelloPos ? `<span>⛰ +${esc(d.dislivelloPos)}m</span>` : ''}
+        </div>
+        ${(d.ritrovoLuogo || d.ritrovoOrario) ? `
+          <div class="section-title">📍 Punto di ritrovo</div>
+          <div class="ritrovo-line">${esc(d.ritrovoLuogo || '-')}${d.ritrovoOrario ? ` — ore ${esc(d.ritrovoOrario)}` : ''}</div>
+        ` : ''}
+        ${(d.partecipanti && d.partecipanti.length) ? `
+          <div class="section-title">👥 Partecipanti</div>
+          <ul class="partecipanti">${d.partecipanti.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+        ` : ''}
+        <div class="note-box">
+          ℹ️ Questa è una pagina di sola lettura, senza connessione a server: tutti i dati mostrati sono contenuti nel link stesso. Non riceverai aggiornamenti automatici — se il percorso cambia, chi organizza l'escursione dovrà inviarti un nuovo link.
+        </div>
+      </div>
+      ${d.generatoIl ? `<div class="generato">Link generato il ${esc(new Date(d.generatoIl).toLocaleString('it-IT'))}</div>` : ''}
+    `;
+  }
+  render();
+</script>
+</body>
+</html>

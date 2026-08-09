@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.1 — storage.js (livello di persistenza)
+// Trekking v1.2 — storage.js (livello di persistenza)
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -19,13 +19,14 @@
 // ============================================================
 
 const DB_NAME    = 'trekking_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // v2: aggiunto lo store "waypoints" (punti d'interesse)
 
 const STORES = {
   escursioni:     'escursioni',      // percorsi/itinerari
   partecipanti:   'partecipanti',    // membri del gruppo per escursione
   equipaggiamento:'equipaggiamento', // voci equipaggiamento (personale/gruppo)
   bacheca:        'bacheca',         // avvisi/messaggi locali (V1: no chat realtime)
+  waypoints:      'waypoints',       // punti d'interesse su mappa (acqua/rifugio/panorama/pericolo)
   impostazioni:   'impostazioni',    // config app (chiave/valore)
 };
 
@@ -52,6 +53,10 @@ function openDb() {
       }
       if (!db.objectStoreNames.contains(STORES.bacheca)) {
         const s = db.createObjectStore(STORES.bacheca, { keyPath: 'id' });
+        s.createIndex('escursioneId', 'escursioneId');
+      }
+      if (!db.objectStoreNames.contains(STORES.waypoints)) {
+        const s = db.createObjectStore(STORES.waypoints, { keyPath: 'id' });
         s.createIndex('escursioneId', 'escursioneId');
       }
       if (!db.objectStoreNames.contains(STORES.impostazioni)) {
@@ -149,15 +154,16 @@ async function settingSet(chiave, valore) {
 // ============================================================
 
 async function exportAllData() {
-  const [escursioni, partecipanti, equipaggiamento, bacheca] = await Promise.all([
+  const [escursioni, partecipanti, equipaggiamento, bacheca, waypoints] = await Promise.all([
     dbGetAll(STORES.escursioni),
     dbGetAll(STORES.partecipanti),
     dbGetAll(STORES.equipaggiamento),
     dbGetAll(STORES.bacheca),
+    dbGetAll(STORES.waypoints),
   ]);
   return {
-    app: 'trekking', versione: '1.0', esportatoIl: new Date().toISOString(),
-    escursioni, partecipanti, equipaggiamento, bacheca,
+    app: 'trekking', versione: '1.2', esportatoIl: new Date().toISOString(),
+    escursioni, partecipanti, equipaggiamento, bacheca, waypoints,
   };
 }
 
@@ -168,5 +174,6 @@ async function importAllData(json) {
   (json.partecipanti || []).forEach(r => ops.push(dbSave(STORES.partecipanti, r)));
   (json.equipaggiamento || []).forEach(r => ops.push(dbSave(STORES.equipaggiamento, r)));
   (json.bacheca || []).forEach(r => ops.push(dbSave(STORES.bacheca, r)));
+  (json.waypoints || []).forEach(r => ops.push(dbSave(STORES.waypoints, r)));
   await Promise.all(ops);
 }

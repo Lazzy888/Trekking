@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.1 — app.js
+// Trekking v1.2 — app.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -20,6 +20,7 @@ let state = {
   escursioni: [],
   partecipanti: [],
   equipaggiamento: [],
+  waypoints: [],
   settings: { tema: 'giorno', fontScale: 'normale' },
 };
 
@@ -53,9 +54,13 @@ function applyTheme() {
 }
 
 async function refreshEscursioneCorrelati() {
-  if (!state.escursioneAttivaId) { state.partecipanti = []; state.equipaggiamento = []; return; }
+  if (!state.escursioneAttivaId) {
+    state.partecipanti = []; state.equipaggiamento = []; state.waypoints = [];
+    return;
+  }
   state.partecipanti = await dbGetByIndex(STORES.partecipanti, 'escursioneId', state.escursioneAttivaId);
   state.equipaggiamento = await dbGetByIndex(STORES.equipaggiamento, 'escursioneId', state.escursioneAttivaId);
+  state.waypoints = await dbGetByIndex(STORES.waypoints, 'escursioneId', state.escursioneAttivaId);
 }
 
 // ============================================================
@@ -92,7 +97,10 @@ function renderPercorsi(main) {
   wrap.innerHTML = `
     <div class="section-head">
       <h2>🥾 Percorsi e Itinerari</h2>
-      <button class="btn-primary" id="btnNuovaEscursione">+ Nuova escursione</button>
+      <div class="section-head-actions">
+        <button class="btn-secondary" id="btnItinerariPredefiniti">📚 Itinerari predefiniti</button>
+        <button class="btn-primary" id="btnNuovaEscursione">+ Nuova escursione</button>
+      </div>
     </div>
     <div class="escursioni-list" id="escursioniList"></div>
     ${attiva ? renderEscursioneDettaglioHtml(attiva) : '<p class="empty-hint">Nessuna escursione selezionata. Creane una o selezionane una dalla lista.</p>'}
@@ -113,6 +121,7 @@ function renderPercorsi(main) {
   });
 
   $('#btnNuovaEscursione').addEventListener('click', apriModalNuovaEscursione);
+  $('#btnItinerariPredefiniti').addEventListener('click', apriModalItinerariPredefiniti);
 
   if (attiva) bindEscursioneDettaglio(attiva);
 }
@@ -133,13 +142,33 @@ function renderEscursioneDettaglioHtml(e) {
       </div>
       ${meteoInfo}
       <div id="mapPreview" class="map-preview">${e.tracciaGpx ? '<div id="leafletMap"></div>' : '<p class="empty-hint">Nessuna traccia GPX importata.</p>'}</div>
+      ${e.tracciaGpx ? '<div class="elevation-box"><canvas id="elevationChart" height="90"></canvas></div>' : ''}
       <div class="ed-actions">
         <button class="btn-secondary" id="btnImportGpx">📥 Importa GPX</button>
         <button class="btn-secondary" id="btnDownloadOffline">⬇️ Rendi disponibile offline</button>
         <button class="btn-secondary" id="btnCondividiEscursione">🔗 Condividi</button>
+        <button class="btn-secondary" id="btnAggiungiWaypoint">📍 Punto d'interesse</button>
         <button class="btn-secondary" id="btnVaiEquipaggiamento">🧭 Equipaggiamento richiesto</button>
       </div>
       <input type="file" id="gpxFileInput" accept=".gpx" style="display:none">
+      ${renderWaypointsListHtml()}
+    </div>
+  `;
+}
+
+function renderWaypointsListHtml() {
+  if (!state.waypoints.length) return '';
+  const icone = Object.fromEntries(WAYPOINT_TIPI.map(t => [t.key, t.label.split(' ')[0]]));
+  return `
+    <div class="waypoints-box">
+      <h4>📍 Punti d'interesse</h4>
+      <ul class="waypoints-list">
+        ${state.waypoints.map(w => `
+          <li data-id="${w.id}">
+            <span>${icone[w.tipo] || '📍'} <strong>${esc(w.nome)}</strong>${w.note ? ` — ${esc(w.note)}` : ''}</span>
+            <button class="btn-rimuovi-waypoint" data-id="${w.id}" aria-label="Rimuovi">✕</button>
+          </li>`).join('')}
+      </ul>
     </div>
   `;
 }
@@ -149,12 +178,125 @@ function bindEscursioneDettaglio(e) {
   $('#gpxFileInput').addEventListener('change', ev => importaGpx(e, ev.target.files[0]));
   $('#btnDownloadOffline').addEventListener('click', () => scaricaOffline(e));
   $('#btnCondividiEscursione').addEventListener('click', () => condividiEscursione(e));
+  $('#btnAggiungiWaypoint').addEventListener('click', () => apriModalWaypoint(e));
   $('#btnVaiEquipaggiamento').addEventListener('click', () => {
     state.view = 'attrezzatura';
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === 'attrezzatura'));
     render();
   });
-  if (e.tracciaGpx) disegnaMappa(e);
+  $$('.btn-rimuovi-waypoint').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await dbDelete(STORES.waypoints, btn.dataset.id);
+      state.waypoints = state.waypoints.filter(w => w.id !== btn.dataset.id);
+      render();
+    });
+  });
+  if (e.tracciaGpx) {
+    disegnaMappa(e);
+    disegnaProfiloAltimetrico(e);
+  }
+}
+
+// ============================================================
+// PUNTI D'INTERESSE (waypoint: acqua, rifugio, panorama, pericolo)
+// ============================================================
+function apriModalWaypoint(escursione) {
+  apriModal('📍 Nuovo punto d\'interesse', `
+    <label>Tipo</label>
+    <select id="fWTipo">${WAYPOINT_TIPI.map(t => `<option value="${t.key}">${t.label}</option>`).join('')}</select>
+    <label>Nome</label>
+    <input type="text" id="fWNome" placeholder="es. Fontana del Vallone">
+    <div class="form-row">
+      <div><label>Latitudine</label><input type="number" id="fWLat" step="0.00001" placeholder="es. 40.05123"></div>
+      <div><label>Longitudine</label><input type="number" id="fWLon" step="0.00001" placeholder="es. 15.45678"></div>
+    </div>
+    <button class="btn-secondary" id="btnUsaPosizioneAttuale">📡 Usa posizione attuale</button>
+    <label>Note (opzionale)</label>
+    <input type="text" id="fWNote" placeholder="es. acqua non potabile in estate">
+    <button class="btn-primary" id="btnSalvaWaypoint">Salva punto</button>
+  `);
+  $('#btnUsaPosizioneAttuale').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Geolocalizzazione non disponibile su questo dispositivo.'); return; }
+    navigator.geolocation.getCurrentPosition(pos => {
+      $('#fWLat').value = pos.coords.latitude.toFixed(5);
+      $('#fWLon').value = pos.coords.longitude.toFixed(5);
+    }, () => alert('Impossibile ottenere la posizione. Verifica i permessi GPS.'), { enableHighAccuracy: true, timeout: 10000 });
+  });
+  $('#btnSalvaWaypoint').addEventListener('click', async () => {
+    const nome = $('#fWNome').value.trim();
+    const lat = parseFloat($('#fWLat').value);
+    const lon = parseFloat($('#fWLon').value);
+    if (!nome) { alert('Inserisci un nome per il punto.'); return; }
+    if (isNaN(lat) || isNaN(lon)) { alert('Inserisci coordinate valide (o usa "Posizione attuale").'); return; }
+    const w = await dbSave(STORES.waypoints, {
+      id: uuid(), escursioneId: escursione.id,
+      tipo: $('#fWTipo').value, nome, lat, lon,
+      note: $('#fWNote').value.trim(),
+    });
+    state.waypoints.push(w);
+    chiudiModal();
+    render();
+  });
+}
+
+// ============================================================
+// PROFILO ALTIMETRICO (canvas, dai punti trkpt del GPX)
+// ============================================================
+function disegnaProfiloAltimetrico(e) {
+  const canvas = document.getElementById('elevationChart');
+  if (!canvas || !e.tracciaGpx) return;
+  const points = JSON.parse(e.tracciaGpx);
+  if (points.length < 2) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 300, h = canvas.clientHeight || 90;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+
+  // Distanza cumulativa (asse X) e quota (asse Y)
+  let distKm = 0;
+  const xs = [0];
+  for (let i = 1; i < points.length; i++) {
+    distKm += haversineKm(points[i - 1], points[i]);
+    xs.push(distKm);
+  }
+  const eles = points.map(p => p.ele || 0);
+  const eleMin = Math.min(...eles), eleMax = Math.max(...eles);
+  const eleRange = Math.max(1, eleMax - eleMin);
+  const pad = 8;
+
+  const styles = getComputedStyle(document.body);
+  const colorLine = styles.getPropertyValue('--primary').trim() || '#2e5339';
+  const colorFill = styles.getPropertyValue('--primary-l').trim() || '#4c7a52';
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = pad + (xs[i] / distKm) * (w - pad * 2);
+    const y = h - pad - ((p.ele - eleMin) / eleRange) * (h - pad * 2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(w - pad, h - pad);
+  ctx.lineTo(pad, h - pad);
+  ctx.closePath();
+  ctx.fillStyle = colorFill + '33';
+  ctx.fill();
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = pad + (xs[i] / distKm) * (w - pad * 2);
+    const y = h - pad - ((p.ele - eleMin) / eleRange) * (h - pad * 2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = colorLine;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = styles.getPropertyValue('--text2').trim() || '#445446';
+  ctx.font = '11px ' + (styles.getPropertyValue('--font').trim() || 'sans-serif');
+  ctx.fillText(`${Math.round(eleMin)}m`, 2, h - 2);
+  ctx.fillText(`${Math.round(eleMax)}m`, 2, 11);
 }
 
 function apriModalNuovaEscursione() {
@@ -184,9 +326,10 @@ function apriModalNuovaEscursione() {
     <button class="btn-primary" id="btnSalvaEscursione">Salva escursione</button>
   `);
   $('#btnSalvaEscursione').addEventListener('click', async () => {
-    const nuova = {
-      id: uuid(),
-      nome: $('#fNome').value.trim(),
+    const nome = $('#fNome').value.trim();
+    if (!nome) { alert('Inserisci un nome per l\'escursione.'); return; }
+    await creaEEattivaEscursione({
+      nome,
       partenza: $('#fPartenza').value.trim(),
       arrivo: $('#fArrivo').value.trim(),
       data: $('#fData').value,
@@ -199,15 +342,61 @@ function apriModalNuovaEscursione() {
       senzaAcqua: $('#fSenzaAcqua').checked,
       lunghezzaKm: 0,
       tracciaGpx: null,
-    };
-    if (!nuova.nome) { alert('Inserisci un nome per l\'escursione.'); return; }
-    const salvata = await dbSave(STORES.escursioni, nuova);
-    state.escursioni.push(salvata);
-    state.escursioneAttivaId = salvata.id;
-    await generaChecklistIntelligente(salvata);
-    await refreshEscursioneCorrelati();
+    });
     chiudiModal();
     render();
+  });
+}
+
+// ── Crea, salva, seleziona e genera la checklist per una nuova escursione.
+// Usata sia dal form manuale sia dagli itinerari predefiniti. ──
+async function creaEEattivaEscursione(datiBase) {
+  const nuova = { id: uuid(), ...datiBase };
+  const salvata = await dbSave(STORES.escursioni, nuova);
+  state.escursioni.push(salvata);
+  state.escursioneAttivaId = salvata.id;
+  await generaChecklistIntelligente(salvata);
+  await refreshEscursioneCorrelati();
+  return salvata;
+}
+
+// ============================================================
+// ITINERARI PREDEFINITI (libreria curata, sola lettura)
+// ============================================================
+function apriModalItinerariPredefiniti() {
+  apriModal('📚 Itinerari predefiniti', `
+    <p class="hint">Percorsi consigliati, pronti da usare come base per una nuova escursione. Non includono una traccia GPX: importala a parte se disponibile.</p>
+    <div class="itinerari-predef-list">
+      ${ITINERARI_PREDEFINITI.map((it, i) => `
+        <div class="itinerario-predef-card">
+          <div class="ipc-head">
+            <strong>${esc(it.nome)}</strong>
+            <span class="badge diff-${esc(it.difficolta)}">${esc(it.difficolta)}</span>
+          </div>
+          <div class="ipc-meta">
+            <span>📏 ${esc(it.lunghezzaKm)} km</span>
+            <span>⏱ ${esc(it.durataStimata)}</span>
+            <span>⛰ +${esc(it.dislivelloPos)}m</span>
+          </div>
+          <p class="ipc-desc">${esc(it.descrizione)}</p>
+          <button class="btn-secondary btn-usa-itinerario" data-idx="${i}">Usa questo percorso</button>
+        </div>
+      `).join('')}
+    </div>
+  `);
+  $$('.btn-usa-itinerario').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const it = ITINERARI_PREDEFINITI[Number(btn.dataset.idx)];
+      await creaEEattivaEscursione({
+        nome: it.nome, partenza: it.partenza, arrivo: it.arrivo, data: '',
+        durataStimata: it.durataStimata, difficolta: it.difficolta,
+        dislivelloPos: it.dislivelloPos, dislivelloNeg: it.dislivelloNeg,
+        quotaMax: it.quotaMax, ferrata: it.ferrata, senzaAcqua: it.senzaAcqua,
+        lunghezzaKm: it.lunghezzaKm, tracciaGpx: null,
+      });
+      chiudiModal();
+      render();
+    });
   });
 }
 
@@ -267,6 +456,15 @@ function disegnaMappa(e) {
   }).addTo(map);
   const latlngs = points.map(p => [p.lat, p.lon]);
   const line = L.polyline(latlngs, { color: '#2e5339', weight: 4 }).addTo(map);
+
+  const iconePerTipo = { acqua: '💧', rifugio: '🏠', panorama: '🌄', pericolo: '⚠️' };
+  state.waypoints.forEach(w => {
+    if (isNaN(w.lat) || isNaN(w.lon)) return;
+    L.marker([w.lat, w.lon], {
+      icon: L.divIcon({ html: `<span class="wp-marker">${iconePerTipo[w.tipo] || '📍'}</span>`, className: '', iconSize: [26, 26] }),
+    }).addTo(map).bindPopup(`<strong>${esc(w.nome)}</strong>${w.note ? `<br>${esc(w.note)}` : ''}`);
+  });
+
   map.fitBounds(line.getBounds());
 }
 
@@ -412,7 +610,11 @@ function renderCategoriaChecklist(cat) {
               <input type="checkbox" class="chk-spunta" ${v.spuntato ? 'checked' : ''}>
               ${esc(v.nome)}${v.motivo ? `<span class="motivo"> · ${esc(v.motivo)}</span>` : ''}
             </label>
-            ${cat.key === 'gruppo-condiviso' ? renderAssegnaSelect(v) : ''}
+            ${cat.key === 'gruppo-condiviso' ? `
+              <div class="peso-riga">
+                ${renderAssegnaSelect(v)}
+                <input type="number" class="inp-peso-voce" min="0" step="0.1" placeholder="kg" value="${v.pesoKg || ''}">
+              </div>` : ''}
           </li>`).join('')}
       </ul>
     </div>
@@ -441,6 +643,14 @@ function bindCategoriaChecklist(catKey) {
       sel.addEventListener('change', async () => {
         const voce = state.equipaggiamento.find(v => v.id === id);
         voce.assegnatoA = sel.value || null;
+        await dbSave(STORES.equipaggiamento, voce);
+      });
+    }
+    const inpPeso = li.querySelector('.inp-peso-voce');
+    if (inpPeso) {
+      inpPeso.addEventListener('change', async () => {
+        const voce = state.equipaggiamento.find(v => v.id === id);
+        voce.pesoKg = Number(inpPeso.value) || 0;
         await dbSave(STORES.equipaggiamento, voce);
       });
     }
@@ -479,6 +689,8 @@ function renderGruppo(main) {
         </li>`).join('') || '<p class="empty-hint">Nessun partecipante ancora aggiunto.</p>'}
     </ul>
 
+    ${renderPesoZainoHtml()}
+
     <div class="section-head"><h3>📍 Punto di ritrovo</h3></div>
     <div class="ritrovo-box">
       <input type="text" id="fRitrovoLuogo" placeholder="Luogo" value="${esc(attiva.ritrovoLuogo || '')}">
@@ -497,6 +709,8 @@ function renderGruppo(main) {
     <div class="section-head"><h3>🆘 Sicurezza</h3></div>
     <button class="btn-danger" id="btnSOS">🆘 Invia posizione SOS</button>
     <p class="hint-sync">Genera un SMS con le tue coordinate GPS attuali verso il numero di emergenza che imposterai.</p>
+    <button class="btn-secondary" id="btnLinkMonitoraggio">🔗 Link monitoraggio per chi resta a casa</button>
+    <p class="hint-sync">Crea un link di sola lettura con itinerario, punto di ritrovo e orario stimato di rientro, da inviare a chi non partecipa. Non richiede rete né account: i dati sono contenuti nel link stesso.</p>
   `;
   main.appendChild(wrap);
 
@@ -523,7 +737,76 @@ function renderGruppo(main) {
     caricaBacheca(attiva.id);
   });
   $('#btnSOS').addEventListener('click', inviaSOS);
+  $('#btnLinkMonitoraggio').addEventListener('click', () => generaLinkMonitoraggio(attiva));
   caricaBacheca(attiva.id);
+}
+
+// ============================================================
+// PESO ZAINO — calcolatore e bilanciamento tra i partecipanti
+// ============================================================
+function renderPesoZainoHtml() {
+  if (!state.partecipanti.length) return '';
+  const righe = state.partecipanti.map(p => {
+    const pesoAssegnato = state.equipaggiamento
+      .filter(v => v.categoria === 'gruppo-condiviso' && v.assegnatoA === p.id)
+      .reduce((tot, v) => tot + (v.pesoKg || 0), 0);
+    const totale = (p.pesoKg || 0) + pesoAssegnato;
+    return { nome: p.nome, personale: p.pesoKg || 0, gruppo: pesoAssegnato, totale };
+  });
+  const totali = righe.map(r => r.totale).filter(t => t > 0);
+  const sbilanciato = totali.length > 1 && (Math.max(...totali) - Math.min(...totali)) > PESO_SBILANCIAMENTO_KG;
+
+  return `
+    <div class="section-head"><h3>⚖️ Peso zaino</h3></div>
+    <div class="peso-zaino-box">
+      <table class="peso-zaino-table">
+        <thead><tr><th>Partecipante</th><th>Personale</th><th>Di gruppo</th><th>Totale</th></tr></thead>
+        <tbody>
+          ${righe.map(r => `
+            <tr>
+              <td>${esc(r.nome)}</td>
+              <td>${r.personale} kg</td>
+              <td>${r.gruppo.toFixed(1)} kg</td>
+              <td><strong>${r.totale.toFixed(1)} kg</strong></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <p class="hint">Il "peso personale" si imposta aggiungendo o modificando il partecipante; il "peso di gruppo" somma le voci di equipaggiamento condiviso assegnate a quella persona in Attrezzatura (inserisci il peso di ciascuna voce nel campo "kg" accanto all'assegnazione).</p>
+      ${sbilanciato ? `<p class="peso-warning">⚠️ Il carico è sbilanciato tra i partecipanti (scarto oltre ${PESO_SBILANCIAMENTO_KG} kg). Valutate di ridistribuire l'equipaggiamento di gruppo.</p>` : ''}
+    </div>
+  `;
+}
+
+// ============================================================
+// LINK DI MONITORAGGIO ("resto a casa") — sola lettura, nessun backend
+// ============================================================
+function generaLinkMonitoraggio(e) {
+  const payload = {
+    nome: e.nome, partenza: e.partenza, arrivo: e.arrivo, data: e.data,
+    durataStimata: e.durataStimata, difficolta: e.difficolta,
+    lunghezzaKm: e.lunghezzaKm, dislivelloPos: e.dislivelloPos,
+    ritrovoLuogo: e.ritrovoLuogo || '', ritrovoOrario: e.ritrovoOrario || '',
+    partecipanti: state.partecipanti.map(p => p.nome),
+    generatoIl: new Date().toISOString(),
+  };
+  let b64;
+  try {
+    b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  } catch (err) {
+    alert('Impossibile generare il link.');
+    return;
+  }
+  const url = `${location.origin}${location.pathname.replace(/index\.html$/, '')}monitoraggio.html?d=${b64}`;
+
+  if (navigator.share) {
+    navigator.share({ title: `Monitoraggio: ${e.nome}`, text: 'Segui la nostra escursione', url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link di monitoraggio copiato negli appunti. Invialo a chi resta a casa.');
+    }).catch(() => {
+      apriModal('Link monitoraggio', `<p class="hint">Copia questo link:</p><input type="text" readonly value="${esc(url)}" onclick="this.select()">`);
+    });
+  }
 }
 
 async function caricaBacheca(escursioneId) {
@@ -540,6 +823,8 @@ function apriModalPartecipante() {
     <input type="text" id="fPNome">
     <label>Ruolo</label>
     <select id="fPRuolo">${RUOLI_PARTECIPANTE.map(r => `<option value="${r}">${r}</option>`).join('')}</select>
+    <label>Peso zaino personale stimato (kg, opzionale)</label>
+    <input type="number" id="fPPeso" min="0" step="0.5" placeholder="es. 8">
     <button class="btn-primary" id="btnSalvaPartecipante">Salva</button>
   `);
   $('#btnSalvaPartecipante').addEventListener('click', async () => {
@@ -548,6 +833,7 @@ function apriModalPartecipante() {
     const p = await dbSave(STORES.partecipanti, {
       id: uuid(), escursioneId: state.escursioneAttivaId,
       nome, ruolo: $('#fPRuolo').value, stato: 'incerto',
+      pesoKg: Number($('#fPPeso').value) || 0,
     });
     state.partecipanti.push(p);
     chiudiModal();

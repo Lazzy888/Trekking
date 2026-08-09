@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.1 — Pianifica con il gruppo
+  Trekking v1.2 — Pianifica con il gruppo
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -94,7 +94,7 @@
         <div class="author-card-top">
           <div class="author-app-icon">🏔️</div>
           <div class="author-app-info">
-            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.1</span></div>
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.2</span></div>
             <div class="author-app-sub">Produzione Software — luglio 2026</div>
           </div>
         </div>
@@ -132,6 +132,19 @@
         <p><strong>Condividi</strong> — usa la condivisione nativa del
         dispositivo (WhatsApp, Telegram, SMS, email) per inviare i dettagli
         essenziali dell'escursione al gruppo.</p>
+        <p><strong>📚 Itinerari predefiniti</strong> — accanto a "+ Nuova
+        escursione" trovi una piccola libreria di percorsi consigliati e già
+        compilati (partenza, arrivo, difficoltà, dislivelli, quota). Tocca
+        "Usa questo percorso" per clonarlo in una nuova escursione modificabile;
+        la traccia GPX va comunque importata a parte se disponibile.</p>
+        <p><strong>📈 Profilo altimetrico</strong> — dopo l'importazione di un
+        GPX, sotto la mappa compare un grafico con l'andamento della quota
+        lungo il percorso e i valori minimo/massimo.</p>
+        <p><strong>📍 Punti d'interesse</strong> — dalla scheda dell'escursione
+        tocca "📍 Punto d'interesse" per segnare fonti d'acqua, rifugi, punti
+        panoramici o pericoli/vie di fuga: puoi inserire le coordinate a mano
+        o usare "📡 Usa posizione attuale" mentre sei sul posto. I punti
+        compaiono come marker sulla mappa e in un elenco sotto la scheda.</p>
       </div>
 
       <div class="help-section">
@@ -157,7 +170,9 @@
         ciascun oggetto: in questo modo il gruppo vede subito "chi porta cosa"
         ed evita doppioni o dimenticanze (es. due tende e nessun kit di primo
         soccorso). L'assegnazione è visibile solo dopo aver aggiunto i
-        partecipanti nella sezione Gruppo.</p>
+        partecipanti nella sezione Gruppo. Accanto all'assegnazione puoi anche
+        indicare il peso in kg di ciascuna voce: viene usato dal calcolatore
+        "⚖️ Peso zaino" nella sezione Gruppo per bilanciare il carico.</p>
       </div>
 
       <div class="help-section">
@@ -178,6 +193,18 @@
         messaggio precompilato contenente le coordinate GPS (formato WGS84) e
         un link Google Maps. Funziona anche con segnale cellulare debole,
         perché l'SMS non richiede una connessione dati.</p>
+        <p><strong>⚖️ Peso zaino</strong> — imposta il peso stimato del proprio
+        zaino personale quando aggiungi un partecipante, e il peso di ogni
+        voce di equipaggiamento di gruppo nella sezione Attrezzatura (campo
+        "kg" accanto all'assegnazione "chi porta cosa"). La sezione "Peso
+        zaino" del Gruppo somma i due valori per persona e segnala uno
+        sbilanciamento del carico oltre i 3 kg tra il più carico e il meno
+        carico.</p>
+        <p><strong>🔗 Link monitoraggio</strong> — genera un link di sola
+        lettura con itinerario, punto di ritrovo e partecipanti, da inviare a
+        chi resta a casa. Non richiede rete né account dopo la creazione: i
+        dati sono contenuti interamente nel link, che va rigenerato e
+        reinviato se il percorso cambia.</p>
       </div>
 
       <div class="help-section">
@@ -243,6 +270,7 @@
           <li>Le tile della mappa sono disponibili offline solo per le zone già visualizzate almeno una volta con connessione attiva.</li>
           <li>L'invio SOS via SMS richiede comunque copertura di rete cellulare (anche minima) per l'invio del messaggio.</li>
           <li>In questa versione i dati non si sincronizzano automaticamente tra i dispositivi dei diversi partecipanti: usa "Condividi" o l'esportazione/importazione JSON per allinearli manualmente.</li>
+          <li>Il "Link monitoraggio" apre la pagina <code>monitoraggio.html</code> pubblicata insieme all'app: perché chi resta a casa possa aprirlo, l'app deve essere ospitata su un indirizzo web raggiungibile (es. GitHub Pages), non solo installata sul telefono di chi parte.</li>
         </ul>
       </div>
 

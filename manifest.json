@@ -1,8 +1,8 @@
 {
   "name": "Trekking - Pianifica con il gruppo",
   "short_name": "Trekking",
-  "version": "1.1",
-  "description": "Trekking v1.1 - Pianificazione escursioni di gruppo (percorsi, attrezzatura, sicurezza). Copyright (c) 2026 Lazzaro Serva - Centola. Tutti i diritti riservati.",
+  "version": "1.2",
+  "description": "Trekking v1.2 - Pianificazione escursioni di gruppo (percorsi, itinerari predefiniti, waypoint, profilo altimetrico, peso zaino, attrezzatura, sicurezza). Copyright (c) 2026 Lazzaro Serva - Centola. Tutti i diritti riservati.",
   "author": "Lazzaro Serva – http://www.graficaesiti.it/",
   "start_url": "./index.html",
   "scope": "./",
