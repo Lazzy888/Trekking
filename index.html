@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.4 — Pianifica con il gruppo
+  Trekking v1.4.1 — Pianifica con il gruppo
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -14,7 +14,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org https://trekking-sync.algoritmosoftware.workers.dev https://api.open-meteo.com https://geocoding-api.open-meteo.com;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
 <title>Trekking - Pianifica con il gruppo</title>
@@ -94,7 +94,7 @@
         <div class="author-card-top">
           <div class="author-app-icon">🏔️</div>
           <div class="author-app-info">
-            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.4</span></div>
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.4.1</span></div>
             <div class="author-app-sub">Produzione Software — luglio 2026</div>
           </div>
         </div>
@@ -339,6 +339,14 @@
         Sì: puoi creare più escursioni e passare dall'una all'altra dai
         riquadri nella sezione Percorsi; ognuna ha il proprio gruppo ed
         equipaggiamento.</p>
+        <p><strong>L'icona installata mostra "Impossibile raggiungere il
+        sito" (ERR_FAILED) invece di aprire l'app.</strong> Succede quando la
+        copia salvata sul telefono resta agganciata a una versione precedente
+        durante un aggiornamento e, in quel momento, anche la rete non
+        risponde. Soluzione: apri l'app da un normale link nel browser (non
+        dall'icona) con connessione attiva, lascia che si aggiorni, poi
+        riprova dall'icona. Se persiste, disinstalla l'icona e reinstallala
+        da "Aggiungi a schermata Home".</p>
       </div>
 
       <div class="help-section">

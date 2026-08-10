@@ -1,5 +1,21 @@
 Trekking — Changelog
 
+v1.4.1 — agosto 2026 (correzioni)
+- Corretta la Content-Security-Policy (connect-src) in index.html: non
+  includeva gli indirizzi del Worker di sincronizzazione né di Open-Meteo,
+  introdotti in v1.3/v1.4, bloccando silenziosamente le relative richieste
+  ("Failed to fetch" anche a Worker perfettamente raggiungibile).
+- Corretto un bug nel Service Worker: quando sia la rete che la cache
+  fallivano insieme, il fetch handler risolveva a "undefined" invece di
+  una vera Response, causando su Chrome/Android un generico
+  "Impossibile raggiungere il sito" (net::ERR_FAILED) al posto di un
+  messaggio comprensibile. Ora restituisce sempre una pagina di
+  fallback offline leggibile.
+- CACHE_NAME → v1.4.1 per forzare l'aggiornamento sui dispositivi con
+  una versione precedente già installata.
+- Aggiunta una voce alle Domande frequenti del manuale sul sintomo
+  ERR_FAILED e come risolverlo.
+
 v1.4 — agosto 2026
 - Meteo automatico: previsioni giornaliere (Open-Meteo, gratuito, senza
   chiave API) per la data e il luogo di partenza dell'escursione, con

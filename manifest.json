@@ -1,8 +1,8 @@
 {
   "name": "Trekking - Pianifica con il gruppo",
   "short_name": "Trekking",
-  "version": "1.4",
-  "description": "Trekking v1.4 - Pianificazione escursioni di gruppo (percorsi, itinerari predefiniti, waypoint, profilo altimetrico, peso zaino, sincronizzazione di gruppo, meteo automatico, stato del sentiero, attrezzatura, sicurezza). Copyright (c) 2026 Lazzaro Serva - Centola. Tutti i diritti riservati.",
+  "version": "1.4.1",
+  "description": "Trekking v1.4.1 - Pianificazione escursioni di gruppo (percorsi, itinerari predefiniti, waypoint, profilo altimetrico, peso zaino, sincronizzazione di gruppo, meteo automatico, stato del sentiero, attrezzatura, sicurezza). Copyright (c) 2026 Lazzaro Serva - Centola. Tutti i diritti riservati.",
   "author": "Lazzaro Serva – http://www.graficaesiti.it/",
   "start_url": "./index.html",
   "scope": "./",

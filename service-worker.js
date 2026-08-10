@@ -1,12 +1,12 @@
 // ============================================================
-// Trekking v1.4 — service-worker.js
+// Trekking v1.4.1 — service-worker.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 
-const CACHE_NAME = 'trekking-v1.4';
-const TILE_CACHE_NAME = 'trekking-tiles-v1.4';
+const CACHE_NAME = 'trekking-v1.4.1';
+const TILE_CACHE_NAME = 'trekking-tiles-v1.4.1';
 
 const ASSETS = [
   './', './index.html', './manifest.json', './monitoraggio.html',
@@ -69,9 +69,28 @@ self.addEventListener('fetch', event => {
         if (r && r.status === 200)
           caches.open(CACHE_NAME).then(c => c.put(event.request, r.clone()));
         return r;
-      }).catch(() =>
-        event.request.mode === 'navigate' ? caches.match('./index.html') : undefined
-      );
+      }).catch(async () => {
+        // Se sia la rete che la cache falliscono, un fetch handler che
+        // risolve a "undefined" fa fallire la navigazione su Chrome/Android
+        // con un generico net::ERR_FAILED, invece di mostrare un messaggio
+        // comprensibile. Restituiamo sempre una vera Response.
+        if (event.request.mode === 'navigate') {
+          const fallback = await caches.match('./index.html');
+          if (fallback) return fallback;
+          return new Response(
+            '<!DOCTYPE html><html lang="it"><meta charset="utf-8">' +
+            '<title>Trekking — offline</title>' +
+            '<body style="font-family:sans-serif;text-align:center;padding:60px 20px;">' +
+            '<h1>📡 Connessione assente</h1>' +
+            '<p>Non è stato possibile caricare l\'app e non è ancora presente ' +
+            'una copia salvata su questo dispositivo.</p>' +
+            '<p>Apri l\'app almeno una volta con connessione attiva, poi ' +
+            'resterà disponibile anche offline.</p></body></html>',
+            { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+          );
+        }
+        return new Response('', { status: 504, statusText: 'Offline' });
+      });
     })
   );
 });
