@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.4.3 — Pianifica con il gruppo
+  Trekking v1.4.4 — Pianifica con il gruppo
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -14,7 +14,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://tile.openstreetmap.org https://trekking-sync.algoritmosoftware.workers.dev https://api.open-meteo.com https://geocoding-api.open-meteo.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org https://*.tile.opentopomap.org https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https://*.tile.opentopomap.org https://trekking-sync.algoritmosoftware.workers.dev https://api.open-meteo.com https://geocoding-api.open-meteo.com;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
 <title>Trekking - Pianifica con il gruppo</title>
@@ -94,7 +94,7 @@
         <div class="author-card-top">
           <div class="author-app-icon">🏔️</div>
           <div class="author-app-info">
-            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.4.3</span></div>
+            <div class="author-app-name">Trekking <span class="author-ver-badge">v1.4.4</span></div>
             <div class="author-app-sub">Produzione Software — luglio 2026</div>
           </div>
         </div>
@@ -121,10 +121,14 @@
         punti traccia (<code>trkpt</code>) e calcola automaticamente lunghezza,
         dislivello positivo/negativo e quota massima, oltre a disegnare il
         percorso sulla mappa interattiva.</p>
-        <p><strong>Mappa interattiva</strong> — usa i layer OpenStreetMap; le
-        tile delle zone già visualizzate restano disponibili anche offline
-        grazie alla cache dedicata del Service Worker (si popola man mano che
-        esplori la mappa con connessione attiva).</p>
+        <p><strong>Mappa interattiva</strong> — di serie mostra la vista
+        <strong>Topografica</strong> (OpenTopoMap), con curve di livello e
+        molti sentieri escursionistici già segnati: molto più leggibile in
+        montagna di una mappa stradale. Dal selettore in alto a destra sulla
+        mappa puoi passare alla vista "Standard" (stile stradale) quando
+        preferisci. Le tile delle zone già visualizzate restano disponibili
+        anche offline grazie alla cache dedicata del Service Worker (si
+        popola man mano che esplori la mappa con connessione attiva).</p>
         <p><strong>Rendi disponibile offline</strong> — traccia, dettagli e
         checklist sono già salvati sul dispositivo non appena crei o modifichi
         l'escursione: questo pulsante avvia anche il pre-caricamento delle tile
@@ -285,7 +289,16 @@
         traccia, partecipanti, checklist attrezzatura, avvisi in bacheca), utili
         per provare subito l'app o per una presentazione. L'operazione è in
         <strong>modalità append</strong>: aggiunge dati nuovi senza cancellare o
-        sovrascrivere le escursioni che hai già creato.</p>
+        sovrascrivere le escursioni che hai già creato. Le tracce delle 3
+        escursioni demo sono percorsi densi (100+ punti, non semplici linee
+        spezzate), per un'anteprima realistica di mappa e profilo
+        altimetrico.</p>
+        <p><strong>File GPX di esempio</strong> — nella cartella
+        <code>demo/</code> del progetto trovi anche
+        <code>esempio-traccia-dettagliata.gpx</code>, un file GPX vero e
+        proprio (non i dati demo integrati nell'app) che puoi importare con
+        "📥 Importa GPX" da una qualsiasi escursione, per provare l'import di
+        una traccia densa in formato standard.</p>
       </div>
 
       <div class="help-section">

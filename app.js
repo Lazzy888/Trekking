@@ -578,10 +578,22 @@ function disegnaMappa(e) {
   const el = document.getElementById('leafletMap');
   if (!el) return;
   const map = L.map(el).setView([points[0].lat, points[0].lon], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  // Due layer alternativi: OpenTopoMap (di serie) mostra curve di livello e
+  // molti sentieri escursionistici, molto più leggibile in montagna della
+  // mappa stradale standard; "Standard" resta disponibile dal selettore
+  // in alto a destra per chi preferisce la vista città/strade.
+  const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'Mappa: © OpenTopoMap (CC-BY-SA) — dati © OpenStreetMap',
+    maxZoom: 17,
+  });
+  const standard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
-    maxZoom: 18,
-  }).addTo(map);
+    maxZoom: 19,
+  });
+  topo.addTo(map);
+  L.control.layers({ 'Topografica': topo, 'Standard': standard }, null, { collapsed: true }).addTo(map);
+
   const latlngs = points.map(p => [p.lat, p.lon]);
   const line = L.polyline(latlngs, { color: '#2e5339', weight: 4 }).addTo(map);
 
@@ -593,7 +605,7 @@ function disegnaMappa(e) {
     }).addTo(map).bindPopup(`<strong>${esc(w.nome)}</strong>${w.note ? `<br>${esc(w.note)}` : ''}`);
   });
 
-  map.fitBounds(line.getBounds());
+  map.fitBounds(line.getBounds(), { padding: [16, 16] });
 }
 
 async function scaricaOffline(e) {

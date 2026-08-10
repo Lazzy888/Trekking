@@ -1,12 +1,12 @@
 // ============================================================
-// Trekking v1.4.3 — service-worker.js
+// Trekking v1.4.4 — service-worker.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 
-const CACHE_NAME = 'trekking-v1.4.3';
-const TILE_CACHE_NAME = 'trekking-tiles-v1.4.3';
+const CACHE_NAME = 'trekking-v1.4.4';
+const TILE_CACHE_NAME = 'trekking-tiles-v1.4.4';
 
 const ASSETS = [
   './', './index.html', './manifest.json', './monitoraggio.html',
@@ -60,7 +60,7 @@ self.addEventListener('fetch', event => {
 
   // Tile OpenStreetMap: cache separata, così le zone già visitate restano
   // disponibili offline senza gonfiare la cache principale dell'app.
-  if (url.includes('tile.openstreetmap.org')) {
+  if (url.includes('tile.openstreetmap.org') || url.includes('tile.opentopomap.org')) {
     event.respondWith(
       caches.open(TILE_CACHE_NAME).then(cache =>
         cache.match(event.request).then(cached => {

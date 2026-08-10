@@ -13,7 +13,7 @@
 //   2. incolla l'indirizzo del Worker in API_BASE_URL
 //   3. incolla la chiave pubblica VAPID in VAPID_PUBLIC_KEY
 
-const APP_VERSION = '1.4.3';
+const APP_VERSION = '1.4.4';
 
 const SYNC_ENABLED = true;
 const API_BASE_URL = 'https://trekking-sync.algoritmosoftware.workers.dev';

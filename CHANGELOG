@@ -1,5 +1,24 @@
 Trekking — Changelog
 
+v1.4.4 — agosto 2026
+- Corretto un altro caso della stessa famiglia di bug CSP: img-src (e
+  connect-src) autorizzavano solo il dominio esatto "tile.openstreetmap.org",
+  ma Leaflet richiede i sottodomini a./b./c. per la rotazione delle tile —
+  bloccati dalla policy, la mappa risultava completamente vuota (solo
+  sfondo grigio con il tracciato sopra, nessuna base cartografica). Ora
+  con wildcard (*.tile.openstreetmap.org).
+- Aggiunta la vista Topografica (OpenTopoMap, curve di livello e sentieri
+  escursionistici) come mappa di default, con selettore per tornare alla
+  vista Standard; entrambe autorizzate in CSP e in cache nel Service
+  Worker.
+- Tracce delle 3 escursioni demo infittite da 9-12 punti a 110-155 punti
+  (interpolazione con variazione realistica), per un'anteprima di mappa
+  e profilo altimetrico molto più naturale.
+- Aggiunto un file GPX di esempio standalone
+  (demo/esempio-traccia-dettagliata.gpx) da importare con "Importa GPX"
+  per provare una traccia densa in formato standard.
+- CACHE_NAME → v1.4.4.
+
 v1.4.3 — agosto 2026 (fix definitivo Android)
 - Cambiata la strategia del Service Worker per le richieste di
   navigazione (apertura dell'app) da cache-first a network-first: prova
