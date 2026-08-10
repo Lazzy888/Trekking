@@ -1123,7 +1123,25 @@ async function caricaBacheca(escursioneId) {
   voci.sort((a, b) => b.data - a.data);
   const list = $('#bachecaList');
   if (!list) return;
-  list.innerHTML = voci.map(v => `<li>${v.autore ? `<strong>${esc(v.autore)}:</strong> ` : ''}${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></li>`).join('');
+  list.innerHTML = voci.map(v => `
+    <li data-id="${v.id}">
+      <span>${v.autore ? `<strong>${esc(v.autore)}:</strong> ` : ''}${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></span>
+      <button class="btn-elimina-avviso" data-id="${v.id}" aria-label="Elimina avviso">✕</button>
+    </li>`).join('');
+
+  const attiva = state.escursioni.find(e => e.id === escursioneId);
+  $$('.btn-elimina-avviso').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Eliminare questo avviso?')) return;
+      const id = btn.dataset.id;
+      await dbDelete(STORES.bacheca, id);
+      if (attiva && syncAttivaPer(attiva)) {
+        try { await syncEliminaMessaggio(attiva.codiceGruppo, id); }
+        catch (err) { /* rimosso solo in locale: il Worker verrà allineato al prossimo giro se si ripubblica */ }
+      }
+      caricaBacheca(escursioneId);
+    });
+  });
 }
 
 function apriModalPartecipante() {

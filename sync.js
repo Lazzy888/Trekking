@@ -60,6 +60,9 @@ async function syncFetchMessaggi(codiceGruppo, since) {
 async function syncInviaMessaggio(codiceGruppo, { id, autore, testo, urgente }) {
   return apiFetch(codiceGruppo, 'messaggi', { method: 'POST', body: JSON.stringify({ id, autore, testo, urgente: !!urgente }) });
 }
+async function syncEliminaMessaggio(codiceGruppo, id) {
+  return apiFetch(codiceGruppo, `messaggi/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
 
 // ── Posizione live ──
 async function syncInviaPosizione(codiceGruppo, { partecipanteId, nome, lat, lon }) {

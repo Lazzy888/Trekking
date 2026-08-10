@@ -13,11 +13,11 @@
 //   2. incolla l'indirizzo del Worker in API_BASE_URL
 //   3. incolla la chiave pubblica VAPID in VAPID_PUBLIC_KEY
 
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 
 const SYNC_ENABLED = true;
-const API_BASE_URL = 'https://trekking-sync.algoritmosoftware.workers.dev'; // es. 'https://trekking-sync.<account>.workers.dev'
-const VAPID_PUBLIC_KEY = 'BGC2t5shh9vXILbN3nzNFR0EevFQUvvZWzdg323w4pnYSMSm-MYff7jvJ69xy7A-_7SJisgKFLuJYHRiatMJZls'; // chiave pubblica generata da generate-vapid-keys.mjs
+const API_BASE_URL = 'https://trekking-sync.algoritmosoftware.workers.dev';
+const VAPID_PUBLIC_KEY = 'BGC2t5shh9vXILbN3nzNFR0EevFQUvvZWzdg323w4pnYSMSm-MYff7jvJ69xy7A-_7SJisgKFLuJYHRiatMJZls';
 
 // Ogni quanti millisecondi la vista Gruppo interroga il Worker per nuovi
 // messaggi e posizioni, quando la sincronizzazione è attiva e la vista è

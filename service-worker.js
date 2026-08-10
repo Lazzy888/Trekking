@@ -1,12 +1,12 @@
 // ============================================================
-// Trekking v1.4.1 — service-worker.js
+// Trekking v1.4.2 — service-worker.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 
-const CACHE_NAME = 'trekking-v1.4.1';
-const TILE_CACHE_NAME = 'trekking-tiles-v1.4.1';
+const CACHE_NAME = 'trekking-v1.4.2';
+const TILE_CACHE_NAME = 'trekking-tiles-v1.4.2';
 
 const ASSETS = [
   './', './index.html', './manifest.json', './monitoraggio.html',

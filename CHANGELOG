@@ -1,5 +1,15 @@
 Trekking — Changelog
 
+v1.4.2 — agosto 2026
+- Aggiunta la possibilità di eliminare un avviso dalla bacheca/chat
+  (pulsante "✕" su ogni voce, con conferma). Se la sincronizzazione di
+  gruppo è attiva, l'eliminazione viene propagata anche al Worker
+  (nuovo endpoint DELETE /messaggi/<id> in trekking-sync-worker).
+  Limite noto: i dispositivi che avevano già scaricato il messaggio
+  prima dell'eliminazione non lo rimuovono automaticamente dalla loro
+  copia locale (nessuna propagazione retroattiva delle cancellazioni).
+- sync.js: nuova funzione syncEliminaMessaggio.
+
 v1.4.1 — agosto 2026 (correzioni)
 - Corretta la Content-Security-Policy (connect-src) in index.html: non
   includeva gli indirizzi del Worker di sincronizzazione né di Open-Meteo,
