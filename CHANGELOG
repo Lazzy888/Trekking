@@ -1,5 +1,17 @@
 Trekking — Changelog
 
+v1.4.3 — agosto 2026 (fix definitivo Android)
+- Cambiata la strategia del Service Worker per le richieste di
+  navigazione (apertura dell'app) da cache-first a network-first: prova
+  sempre prima la rete e usa la cache solo se davvero offline. Risolve
+  in modo strutturale il blocco persistente "Impossibile raggiungere il
+  sito" (net::ERR_FAILED) su Android, che con cache-first poteva restare
+  agganciato a una copia vecchia/rotta anche dopo aver corretto e
+  ripubblicato l'app (nessuna richiesta di rete veniva più fatta per la
+  pagina già in cache). Gli asset statici (CSS, JS, icone) restano
+  cache-first come prima.
+- CACHE_NAME → v1.4.3.
+
 v1.4.2 — agosto 2026
 - Aggiunta la possibilità di eliminare un avviso dalla bacheca/chat
   (pulsante "✕" su ogni voce, con conferma). Se la sincronizzazione di
