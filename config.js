@@ -1,23 +1,40 @@
 // ============================================================
-// Trekking v1.4 — config.js
+// Trekking v1.5 — config.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // http://www.graficaesiti.it/
 // Tutti i diritti riservati – All rights reserved.
 // ============================================================
 //
-// Sincronizzazione di gruppo (Worker Cloudflare + KV). Disattiva di
-// default: finché SYNC_ENABLED resta false, tutto funziona come prima,
-// 100% locale. Per attivarla, dopo aver distribuito il Worker (vedi
-// /trekking-sync-worker/README.md):
+// VERSIONE DEMO — questa build gira sempre e solo in locale: tutti i
+// dati (percorsi, gruppo, bacheca, chat, amministratore) restano sul
+// dispositivo in uso, non c'è alcuna connessione verso il Worker
+// Cloudflare finché SYNC_ENABLED resta false. Il codice della
+// sincronizzazione (chat in tempo reale, posizione live, notifiche
+// push) è già pronto in sync.js e nel Worker /trekking-sync-worker,
+// ma va attivato solo su una copia dell'app dedicata a un gruppo
+// specifico, su richiesta esplicita all'autore (vedi DEMO_MODE sotto).
+//
+// Per attivarla su una copia dedicata, dopo aver distribuito il Worker
+// (vedi /trekking-sync-worker/README.md):
 //   1. imposta SYNC_ENABLED = true
-//   2. incolla l'indirizzo del Worker in API_BASE_URL
-//   3. incolla la chiave pubblica VAPID in VAPID_PUBLIC_KEY
+//   2. imposta DEMO_MODE = false
+//   3. incolla l'indirizzo del Worker in API_BASE_URL
+//   4. incolla la chiave pubblica VAPID in VAPID_PUBLIC_KEY
 
-const APP_VERSION = '1.4.4';
+const APP_VERSION = '1.5.0';
 
-const SYNC_ENABLED = true;
+// true = build DEMO (dati solo sul device, nessun contatto con il Worker,
+// badge "DEMO" visibile in app e nel manuale). Impostare a false solo
+// nella copia dedicata a un gruppo specifico, insieme a SYNC_ENABLED.
+const DEMO_MODE = true;
+
+const SYNC_ENABLED = false;
 const API_BASE_URL = 'https://trekking-sync.algoritmosoftware.workers.dev';
 const VAPID_PUBLIC_KEY = 'BGC2t5shh9vXILbN3nzNFR0EevFQUvvZWzdg323w4pnYSMSm-MYff7jvJ69xy7A-_7SJisgKFLuJYHRiatMJZls';
+
+// Indirizzo a cui chi usa la DEMO può richiedere l'attivazione della
+// sincronizzazione dedicata per il proprio gruppo.
+const CONTATTO_AUTORE_URL = 'http://www.graficaesiti.it/';
 
 // Ogni quanti millisecondi la vista Gruppo interroga il Worker per nuovi
 // messaggi e posizioni, quando la sincronizzazione è attiva e la vista è

@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.4 — app.js
+// Trekking v1.5 — app.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/
@@ -16,6 +16,7 @@ function esc(s) {
 // ── Stato applicazione ──
 let state = {
   view: 'percorsi',
+  filtroPercorsi: 'attive', // 'attive' | 'archiviate'
   escursioneAttivaId: null,
   escursioni: [],
   partecipanti: [],
@@ -23,6 +24,8 @@ let state = {
   waypoints: [],
   settings: { tema: 'giorno', fontScale: 'normale' },
   sync: { partecipanteId: null, nomeLocale: '', messaggi: [], posizioni: [], ultimoPoll: 0, condividoPosizione: false, pushAttivo: false },
+  isAdmin: false,           // vero se su questo dispositivo è attiva la modalità Amministratore
+  adminRecordExists: false, // vero se una password amministratore è già stata impostata (su questo device o importata)
 };
 
 let syncPollTimer = null;
@@ -49,10 +52,55 @@ async function initApp() {
     state.escursioneAttivaId = state.escursioni[0].id;
   }
 
+  const adminRec = await dbGet(STORES.admin, 'admin');
+  state.adminRecordExists = !!adminRec;
+  if (adminRec && sessionStorage.getItem('trekking_admin_session') === '1') {
+    state.isAdmin = true;
+  }
+  aggiornaAdminBadge();
+
   bindNav();
   bindGlobalUI();
   await refreshEscursioneCorrelati();
   render();
+}
+
+// ============================================================
+// AMMINISTRATORE — password unica, hash locale (SubtleCrypto SHA-256),
+// nessun account/server: la password (con hash+salt) viaggia tra device
+// solo tramite l'esportazione/importazione dati (vedi storage.js).
+// ============================================================
+async function hashPassword(pw, salt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function adminImpostaPassword(pw) {
+  const salt = uuid();
+  const hash = await hashPassword(pw, salt);
+  await dbSave(STORES.admin, { id: 'admin', salt, hash });
+  state.isAdmin = true;
+  state.adminRecordExists = true;
+  sessionStorage.setItem('trekking_admin_session', '1');
+}
+
+async function adminAccedi(pw) {
+  const rec = await dbGet(STORES.admin, 'admin');
+  if (!rec) throw new Error('Nessuna password amministratore impostata su questo dispositivo.');
+  const hash = await hashPassword(pw, rec.salt);
+  if (hash !== rec.hash) throw new Error('Password amministratore errata.');
+  state.isAdmin = true;
+  sessionStorage.setItem('trekking_admin_session', '1');
+}
+
+function adminEsci() {
+  state.isAdmin = false;
+  sessionStorage.removeItem('trekking_admin_session');
+}
+
+function aggiornaAdminBadge() {
+  const b = $('#adminBadge');
+  if (b) b.classList.toggle('hidden', !state.isAdmin);
 }
 
 function applyTheme() {
@@ -88,6 +136,7 @@ function render() {
   const main = $('#main');
   main.innerHTML = '';
   if (state.view === 'percorsi') renderPercorsi(main);
+  else if (state.view === 'bacheca') renderBacheca(main);
   else if (state.view === 'attrezzatura') renderAttrezzatura(main);
   else if (state.view === 'gruppo') renderGruppo(main);
   else if (state.view === 'impostazioni') renderImpostazioni(main);
@@ -97,7 +146,9 @@ function render() {
 // VISTA: PERCORSI E ITINERARI
 // ============================================================
 function renderPercorsi(main) {
-  const attiva = state.escursioni.find(e => e.id === state.escursioneAttivaId);
+  const elenco = state.escursioni.filter(e => state.filtroPercorsi === 'archiviate' ? !!e.archiviata : !e.archiviata);
+  const candidata = state.escursioni.find(e => e.id === state.escursioneAttivaId);
+  const attiva = candidata && (state.filtroPercorsi === 'archiviate' ? !!candidata.archiviata : !candidata.archiviata) ? candidata : null;
 
   const wrap = document.createElement('div');
   wrap.className = 'view-percorsi';
@@ -110,13 +161,25 @@ function renderPercorsi(main) {
         <button class="btn-primary" id="btnNuovaEscursione">+ Nuova escursione</button>
       </div>
     </div>
+    <div class="tab-row">
+      <button class="tab-btn ${state.filtroPercorsi === 'attive' ? 'active' : ''}" data-f="attive">🥾 Attive</button>
+      <button class="tab-btn ${state.filtroPercorsi === 'archiviate' ? 'active' : ''}" data-f="archiviate">🗄️ Archiviate</button>
+    </div>
     <div class="escursioni-list" id="escursioniList"></div>
-    ${attiva ? renderEscursioneDettaglioHtml(attiva) : '<p class="empty-hint">Nessuna escursione selezionata. Creane una o selezionane una dalla lista.</p>'}
+    ${attiva ? renderEscursioneDettaglioHtml(attiva)
+      : `<p class="empty-hint">${elenco.length ? 'Seleziona un\'escursione dall\'elenco qui sopra.' : (state.filtroPercorsi === 'archiviate' ? 'Nessuna escursione archiviata.' : 'Nessuna escursione attiva. Creane una o passa alle Archiviate.')}</p>`}
   `;
   main.appendChild(wrap);
 
+  $$('.tab-row .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.filtroPercorsi = btn.dataset.f;
+      render();
+    });
+  });
+
   const list = $('#escursioniList');
-  state.escursioni.forEach(e => {
+  elenco.forEach(e => {
     const card = document.createElement('button');
     card.className = 'escursione-chip' + (e.id === state.escursioneAttivaId ? ' active' : '');
     card.textContent = `${e.nome || 'Senza nome'} · ${e.difficolta || '-'}`;
@@ -132,6 +195,23 @@ function renderPercorsi(main) {
   $('#btnItinerariPredefiniti').addEventListener('click', apriModalItinerariPredefiniti);
 
   if (attiva) bindEscursioneDettaglio(attiva);
+}
+
+// ── Cancellazione definitiva di un'escursione e di tutti i dati collegati ──
+async function eliminaEscursioneDefinitivamente(escursioneId) {
+  const [part, equip, way, bach] = await Promise.all([
+    dbGetByIndex(STORES.partecipanti, 'escursioneId', escursioneId),
+    dbGetByIndex(STORES.equipaggiamento, 'escursioneId', escursioneId),
+    dbGetByIndex(STORES.waypoints, 'escursioneId', escursioneId),
+    dbGetByIndex(STORES.bacheca, 'escursioneId', escursioneId),
+  ]);
+  await Promise.all([
+    ...part.map(p => dbDelete(STORES.partecipanti, p.id)),
+    ...equip.map(x => dbDelete(STORES.equipaggiamento, x.id)),
+    ...way.map(x => dbDelete(STORES.waypoints, x.id)),
+    ...bach.map(x => dbDelete(STORES.bacheca, x.id)),
+  ]);
+  await dbDelete(STORES.escursioni, escursioneId);
 }
 
 function renderEscursioneDettaglioHtml(e) {
@@ -154,14 +234,25 @@ function renderEscursioneDettaglioHtml(e) {
       <div id="mapPreview" class="map-preview">${e.tracciaGpx ? '<div id="leafletMap"></div>' : '<p class="empty-hint">Nessuna traccia GPX importata.</p>'}</div>
       ${e.tracciaGpx ? '<div class="elevation-box"><canvas id="elevationChart" height="90"></canvas></div>' : ''}
       <div class="ed-actions">
-        <button class="btn-secondary" id="btnImportGpx">📥 Importa GPX</button>
+        <button class="btn-secondary" id="btnImportGpx">📥 Importa GPX/KML</button>
         <button class="btn-secondary" id="btnDownloadOffline">⬇️ Rendi disponibile offline</button>
         <button class="btn-secondary" id="btnCondividiEscursione">🔗 Condividi</button>
         <button class="btn-secondary" id="btnAggiungiWaypoint">📍 Punto d'interesse</button>
         <button class="btn-secondary" id="btnVaiEquipaggiamento">🧭 Equipaggiamento richiesto</button>
       </div>
-      <input type="file" id="gpxFileInput" accept=".gpx" style="display:none">
+      <input type="file" id="gpxFileInput" accept=".gpx,.kml" style="display:none">
       ${renderWaypointsListHtml()}
+      <div class="section-head"><h4>🗄️ Archivio</h4></div>
+      ${e.archiviata ? `
+        <p class="hint-sync">Archiviata il ${e.archiviataIl ? new Date(e.archiviataIl).toLocaleString('it-IT') : '-'}. Il percorso e tutti i dati collegati restano salvati finché non li elimini definitivamente.</p>
+        <div class="ed-actions">
+          <button class="btn-secondary" id="btnRipristinaEscursione">↩️ Ripristina tra le attive</button>
+          <button class="btn-danger-inline" id="btnEliminaEscursione">🗑️ Elimina definitivamente</button>
+        </div>
+      ` : `
+        <p class="hint">Archivia un'escursione conclusa per toglierla dall'elenco Attive senza perdere il percorso: resta consultabile in Archiviate, da cui potrai anche eliminarla definitivamente.</p>
+        <button class="btn-secondary" id="btnArchiviaEscursione">🗄️ Archivia questa escursione</button>
+      `}
     </div>
   `;
 }
@@ -318,6 +409,33 @@ function bindEscursioneDettaglio(e) {
       state.waypoints = state.waypoints.filter(w => w.id !== btn.dataset.id);
       render();
     });
+  });
+  const btnArchivia = $('#btnArchiviaEscursione');
+  if (btnArchivia) btnArchivia.addEventListener('click', async () => {
+    if (!confirm(`Archiviare "${e.nome || 'questa escursione'}"? Resterà salvata con il suo percorso: potrai ripristinarla o eliminarla definitivamente dalla scheda Archiviate.`)) return;
+    e.archiviata = true; e.archiviataIl = Date.now();
+    await dbSave(STORES.escursioni, e);
+    state.escursioni = await dbGetAll(STORES.escursioni);
+    render();
+  });
+  const btnRipristina = $('#btnRipristinaEscursione');
+  if (btnRipristina) btnRipristina.addEventListener('click', async () => {
+    e.archiviata = false;
+    await dbSave(STORES.escursioni, e);
+    state.escursioni = await dbGetAll(STORES.escursioni);
+    state.filtroPercorsi = 'attive';
+    render();
+  });
+  const btnElimina = $('#btnEliminaEscursione');
+  if (btnElimina) btnElimina.addEventListener('click', async () => {
+    if (!confirm(`Eliminare definitivamente "${e.nome || 'questa escursione'}"? L'operazione non è reversibile: verranno cancellati anche gruppo, equipaggiamento, punti d'interesse e note collegati a questa escursione.`)) return;
+    await eliminaEscursioneDefinitivamente(e.id);
+    state.escursioni = await dbGetAll(STORES.escursioni);
+    if (state.escursioneAttivaId === e.id) {
+      state.escursioneAttivaId = state.escursioni.find(x => !x.archiviata)?.id || null;
+      await refreshEscursioneCorrelati();
+    }
+    render();
   });
   if (e.tracciaGpx) {
     disegnaMappa(e);
@@ -528,18 +646,13 @@ function apriModalItinerariPredefiniti() {
   });
 }
 
-// ── Import GPX (parsing minimale trkpt lat/lon/ele) ──
+// ── Import traccia (GPX o KML) — parsing minimale trkpt/coordinates ──
 async function importaGpx(escursione, file) {
   if (!file) return;
   const text = await file.text();
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(text, 'application/xml');
-  const points = Array.from(xml.getElementsByTagName('trkpt')).map(p => ({
-    lat: parseFloat(p.getAttribute('lat')),
-    lon: parseFloat(p.getAttribute('lon')),
-    ele: parseFloat(p.getElementsByTagName('ele')[0]?.textContent || '0'),
-  }));
-  if (!points.length) { alert('Nessun punto traccia trovato nel file GPX.'); return; }
+  const isKml = /\.kml$/i.test(file.name || '') || /<kml[\s>]/i.test(text);
+  const points = isKml ? parseKmlPoints(text) : parseGpxPoints(text);
+  if (!points.length) { alert(`Nessun punto traccia trovato nel file ${isKml ? 'KML' : 'GPX'}.`); return; }
 
   let km = 0, dislPos = 0, dislNeg = 0, quotaMax = 0;
   for (let i = 1; i < points.length; i++) {
@@ -561,6 +674,36 @@ async function importaGpx(escursione, file) {
   await generaChecklistIntelligente(salvata);
   await refreshEscursioneCorrelati();
   render();
+}
+
+function parseGpxPoints(text) {
+  const xml = new DOMParser().parseFromString(text, 'application/xml');
+  return Array.from(xml.getElementsByTagName('trkpt')).map(p => ({
+    lat: parseFloat(p.getAttribute('lat')),
+    lon: parseFloat(p.getAttribute('lon')),
+    ele: parseFloat(p.getElementsByTagName('ele')[0]?.textContent || '0'),
+  }));
+}
+
+// Legge tutti i nodi <coordinates> del KML (LineString di uno o più
+// Placemark/Track) e li concatena in un'unica traccia, nel formato
+// lon,lat[,quota] separato da spazi previsto dallo standard KML.
+function parseKmlPoints(text) {
+  const xml = new DOMParser().parseFromString(text, 'application/xml');
+  const punti = [];
+  Array.from(xml.getElementsByTagName('coordinates')).forEach(nodo => {
+    const testo = (nodo.textContent || '').trim();
+    if (!testo) return;
+    testo.split(/\s+/).forEach(tupla => {
+      const parti = tupla.split(',');
+      if (parti.length < 2) return;
+      const lon = parseFloat(parti[0]);
+      const lat = parseFloat(parti[1]);
+      const ele = parseFloat(parti[2] || '0');
+      if (!isNaN(lat) && !isNaN(lon)) punti.push({ lat, lon, ele: isNaN(ele) ? 0 : ele });
+    });
+  });
+  return punti;
 }
 
 function haversineKm(a, b) {
@@ -696,6 +839,60 @@ async function generaChecklistIntelligente(escursione) {
 }
 
 // ============================================================
+// VISTA: BACHECA (informazioni generali del gruppo, non legate a una
+// singola escursione) — pubblicazione riservata all'amministratore,
+// lettura aperta a tutti.
+// ============================================================
+function renderBacheca(main) {
+  const wrap = document.createElement('div');
+  wrap.className = 'view-bacheca';
+  wrap.innerHTML = `
+    <div class="section-head"><h2>📣 Bacheca</h2></div>
+    <p class="hint">Informazioni utili per tutto il gruppo, valide per tutte le uscite: regole, numeri utili, comunicazioni generali. Per gli avvisi legati a una singola escursione (orari, meteo, percorso) usa invece "📋 Note per questa escursione" nella sezione Gruppo.</p>
+    ${state.isAdmin ? `
+      <div class="bacheca-box">
+        <textarea id="fBachecaGlobale" placeholder="Scrivi un'informazione per il gruppo…"></textarea>
+        <button class="btn-secondary" id="btnPubblicaBachecaGlobale">Pubblica</button>
+      </div>
+    ` : `<p class="hint-sync">🔒 Sola lettura: solo l'amministratore del gruppo può pubblicare o eliminare gli avvisi in questa bacheca. Vai in Impostazioni → 👑 Amministratore per accedere.</p>`}
+    <ul class="bacheca-list" id="bachecaGlobaleList"></ul>
+  `;
+  main.appendChild(wrap);
+
+  if (state.isAdmin) {
+    $('#btnPubblicaBachecaGlobale').addEventListener('click', async () => {
+      const testo = $('#fBachecaGlobale').value.trim();
+      if (!testo) return;
+      await dbSave(STORES.bachecaGlobale, { id: uuid(), testo, data: Date.now(), autore: 'Amministratore' });
+      $('#fBachecaGlobale').value = '';
+      caricaBachecaGlobale();
+    });
+  }
+  caricaBachecaGlobale();
+}
+
+async function caricaBachecaGlobale() {
+  const voci = await dbGetAll(STORES.bachecaGlobale);
+  voci.sort((a, b) => b.data - a.data);
+  const list = $('#bachecaGlobaleList');
+  if (!list) return;
+  list.innerHTML = voci.map(v => `
+    <li data-id="${v.id}">
+      <span><strong>${esc(v.autore || 'Amministratore')}:</strong> ${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></span>
+      ${state.isAdmin ? `<button class="btn-elimina-avviso" data-id="${v.id}" aria-label="Elimina avviso">✕</button>` : ''}
+    </li>`).join('') || '<p class="empty-hint">Nessun avviso pubblicato.</p>';
+  if (state.isAdmin) {
+    $$('#bachecaGlobaleList .btn-elimina-avviso').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Eliminare questo avviso?')) return;
+        await dbDelete(STORES.bachecaGlobale, btn.dataset.id);
+        caricaBachecaGlobale();
+      });
+    });
+  }
+}
+
+// ============================================================
 // VISTA: ATTREZZATURA / EQUIPAGGIAMENTO RICHIESTO
 // ============================================================
 function renderAttrezzatura(main) {
@@ -720,6 +917,7 @@ function renderAttrezzatura(main) {
     <div class="section-head">
       <h2>🎒 Attrezzatura e Consigli — ${esc(attiva.nome)}</h2>
     </div>
+    ${!state.isAdmin ? '<p class="hint-sync">🔒 Sola lettura: la gestione dell\'attrezzatura (spunte, assegnazioni, pesi) è riservata all\'amministratore del gruppo. Vai in Impostazioni → 👑 Amministratore per accedere.</p>' : ''}
     <p class="hint">Checklist generata automaticamente in base al percorso (quota max ${esc(attiva.quotaMax || 0)}m${attiva.ferrata ? ', tratti di ferrata' : ''}${attiva.senzaAcqua ? ', nessuna fonte d\'acqua' : ''}).</p>
     ${categorie.map(cat => renderCategoriaChecklist(cat)).join('')}
     <div class="section-head">
@@ -735,6 +933,9 @@ function renderAttrezzatura(main) {
   main.appendChild(wrap);
 
   categorie.forEach(cat => bindCategoriaChecklist(cat.key));
+  if (!state.isAdmin) {
+    $$('.view-attrezzatura input, .view-attrezzatura select').forEach(el => { el.disabled = true; });
+  }
 }
 
 function renderCategoriaChecklist(cat) {
@@ -845,14 +1046,16 @@ function renderGruppo(main) {
 
     ${sincronizzato ? renderPosizioneLiveBoxHtml(attiva) : ''}
 
-    <div class="section-head"><h3>${sincronizzato ? '💬 Chat del gruppo' : '📣 Bacheca avvisi'}</h3></div>
+    ${renderChatGlobaleHtml()}
+
+    <div class="section-head"><h3>${sincronizzato ? '💬 Chat in tempo reale (sync)' : '📋 Note per questa escursione'}</h3></div>
     <div class="bacheca-box">
-      <textarea id="fAvviso" placeholder="${sincronizzato ? 'Scrivi un messaggio per il gruppo…' : 'Scrivi un avviso per il gruppo (cambio orario, meteo, modifiche percorso)…'}"></textarea>
+      <textarea id="fAvviso" placeholder="${sincronizzato ? 'Scrivi un messaggio per il gruppo…' : 'Scrivi una nota per questa escursione (cambio orario, meteo, modifiche percorso)…'}"></textarea>
       ${sincronizzato ? '<label class="checkbox-line"><input type="checkbox" id="fUrgente"> ⚠️ Urgente (invia anche una notifica push a tutto il gruppo)</label>' : ''}
       <button class="btn-secondary" id="btnPubblicaAvviso">${sincronizzato ? 'Invia' : 'Pubblica'}</button>
       ${sincronizzato
         ? `<div class="sync-poll-row"><button class="btn-link" id="btnRefreshChat">🔄 Aggiorna ora</button><span class="hint-sync" id="chatStatoSync"></span></div>`
-        : '<p class="hint-sync">📡 Nessuna sincronizzazione attiva: la bacheca resta solo su questo dispositivo. Attivala qui sopra per condividerla in tempo reale con il gruppo.</p>'}
+        : '<p class="hint-sync">📡 Nessuna sincronizzazione attiva in questa DEMO: le note restano solo su questo dispositivo, legate a questa escursione. Per informazioni generali del gruppo usa la sezione 📣 Bacheca.</p>'}
       <ul class="bacheca-list" id="bachecaList"></ul>
     </div>
 
@@ -904,6 +1107,62 @@ function renderGruppo(main) {
     avviaSyncPolling(attiva);
   }
   caricaBacheca(attiva.id);
+  bindChatGlobale();
+}
+
+// ============================================================
+// CHAT DEL GRUPPO — locale, aperta a tutti i partecipanti (a differenza
+// della Bacheca, riservata all'amministratore). In questa DEMO resta sul
+// singolo dispositivo: si allinea tra device solo con l'esportazione/
+// importazione dati in Impostazioni, finché non viene richiesta la
+// sincronizzazione in tempo reale dedicata al gruppo.
+// ============================================================
+function renderChatGlobaleHtml() {
+  return `
+    <div class="section-head"><h3>💬 Chat del gruppo</h3></div>
+    <div class="bacheca-box">
+      <p class="hint">Aperta a tutti i partecipanti (a differenza della Bacheca, riservata all'amministratore). In questa versione DEMO resta solo su questo dispositivo: usa "Esporta dati"/"Importa dati" in Impostazioni per condividerla con un altro device.</p>
+      <input type="text" id="fChatAutore" placeholder="Il tuo nome" value="${esc(state.sync.nomeLocale || '')}">
+      <textarea id="fChatGlobale" placeholder="Scrivi un messaggio per il gruppo…"></textarea>
+      <button class="btn-secondary" id="btnInviaChatGlobale">Invia</button>
+      <ul class="bacheca-list" id="chatGlobaleList"></ul>
+    </div>
+  `;
+}
+
+function bindChatGlobale() {
+  $('#btnInviaChatGlobale').addEventListener('click', async () => {
+    const testo = $('#fChatGlobale').value.trim();
+    if (!testo) return;
+    const autore = $('#fChatAutore').value.trim() || 'Anonimo';
+    if (autore !== state.sync.nomeLocale) {
+      state.sync.nomeLocale = autore;
+      await setNomeLocale(autore);
+    }
+    await dbSave(STORES.chatGlobale, { id: uuid(), testo, autore, data: Date.now() });
+    $('#fChatGlobale').value = '';
+    caricaChatGlobale();
+  });
+  caricaChatGlobale();
+}
+
+async function caricaChatGlobale() {
+  const voci = await dbGetAll(STORES.chatGlobale);
+  voci.sort((a, b) => b.data - a.data);
+  const list = $('#chatGlobaleList');
+  if (!list) return;
+  list.innerHTML = voci.map(v => `
+    <li data-id="${v.id}">
+      <span><strong>${esc(v.autore || 'Anonimo')}:</strong> ${esc(v.testo)} <span class="data">${new Date(v.data).toLocaleString('it-IT')}</span></span>
+      <button class="btn-elimina-avviso" data-id="${v.id}" aria-label="Elimina messaggio">✕</button>
+    </li>`).join('') || '<p class="empty-hint">Nessun messaggio ancora. Scrivi il primo!</p>';
+  $$('#chatGlobaleList .btn-elimina-avviso').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Eliminare questo messaggio?')) return;
+      await dbDelete(STORES.chatGlobale, btn.dataset.id);
+      caricaChatGlobale();
+    });
+  });
 }
 
 // ============================================================
@@ -1191,6 +1450,31 @@ function inviaSOS() {
   }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
+// ── Blocco Amministratore (Impostazioni) ──
+function renderAdminBlockHtml() {
+  if (state.isAdmin) {
+    return `
+      <p class="hint-sync">🔑 <strong>Modalità Amministratore ATTIVA</strong> su questo dispositivo. Puoi gestire 📣 Bacheca e 🎒 Attrezzatura.</p>
+      <button class="btn-secondary" id="btnAdminEsci">Esci dalla modalità amministratore</button>
+      <button class="btn-secondary" id="btnAdminCambiaPassword">Cambia password amministratore</button>
+    `;
+  }
+  if (!state.adminRecordExists) {
+    return `
+      <p class="hint">Nessuna password amministratore impostata. Chi la sceglie per primo diventa l'unico amministratore del gruppo, con accesso in scrittura a 📣 Bacheca e 🎒 Attrezzatura. La password (con tutti gli altri dati) può essere trasferita ad altri dispositivi tramite "⬇️ Esporta dati"/"⬆️ Importa dati" qui sotto.</p>
+      <label>Nuova password amministratore</label>
+      <input type="password" id="fNuovaPasswordAdmin" placeholder="Almeno 4 caratteri">
+      <button class="btn-primary" id="btnImpostaPasswordAdmin">Imposta password e diventa amministratore</button>
+    `;
+  }
+  return `
+    <p class="hint">Password amministratore già impostata per questo gruppo (un solo amministratore).</p>
+    <label>Password amministratore</label>
+    <input type="password" id="fPasswordAdmin" placeholder="Password">
+    <button class="btn-primary" id="btnAccediAdmin">Accedi come amministratore</button>
+  `;
+}
+
 // ============================================================
 // VISTA: IMPOSTAZIONI
 // ============================================================
@@ -1225,10 +1509,21 @@ function renderImpostazioni(main) {
     </div>
 
     <div class="settings-block">
+      <h3>🧪 Versione DEMO</h3>
+      <p class="hint-sync">Questa è una <strong>PWA DEMO</strong>: tutti i dati (percorsi, gruppo, bacheca, chat, amministratore) restano solo su questo dispositivo. Nessuna sincronizzazione automatica tra i telefoni del gruppo. Per allineare i dati tra due device usa "Esporta dati"/"Importa dati" qui sotto.</p>
+      <p class="hint-sync">Una sincronizzazione in tempo reale (chat, posizione live, notifiche push) dedicata al tuo gruppo può essere attivata su richiesta esplicita all'autore: <a href="${esc(CONTATTO_AUTORE_URL)}" target="_blank" rel="noopener">${esc(CONTATTO_AUTORE_URL)}</a></p>
+    </div>
+
+    <div class="settings-block">
+      <h3>👑 Amministratore</h3>
+      <div id="adminBlock">${renderAdminBlockHtml()}</div>
+    </div>
+
+    <div class="settings-block">
       <h3>☁️ Sincronizzazione cloud</h3>
       ${SYNC_ENABLED
         ? `<p class="hint-sync">Sincronizzazione configurata (Worker: <code>${esc(API_BASE_URL)}</code>). Attivala per una singola escursione dalla sezione Gruppo: genera un codice da condividere con i partecipanti per chat, posizione live e notifiche push.</p>`
-        : '<p class="hint-sync">Non ancora configurata su questo deploy. Per attivarla, distribuisci il Worker in <code>/trekking-sync-worker</code> e imposta <code>SYNC_ENABLED</code>, <code>API_BASE_URL</code> e <code>VAPID_PUBLIC_KEY</code> in config.js (vedi il README del Worker).</p>'}
+        : '<p class="hint-sync">Disattivata in questa DEMO (vedi sopra). La sezione Gruppo funziona tutta offline: bacheca, chat e attrezzatura restano locali finché non richiedi l\'attivazione dedicata.</p>'}
       ${state.sync.nomeLocale ? `<p class="hint-sync">Il tuo nome nel gruppo: <strong>${esc(state.sync.nomeLocale)}</strong>. <button class="btn-link" id="btnCambiaNomeLocale">cambia</button></p>` : ''}
     </div>
 
@@ -1284,6 +1579,8 @@ function renderImpostazioni(main) {
       await importAllData(json);
       state.escursioni = await dbGetAll(STORES.escursioni);
       await refreshEscursioneCorrelati();
+      const adminRec = await dbGet(STORES.admin, 'admin');
+      state.adminRecordExists = !!adminRec;
       alert('Dati importati correttamente.');
       render();
     } catch (err) {
@@ -1301,6 +1598,40 @@ function renderImpostazioni(main) {
     location.reload();
   });
   $('#btnManuale').addEventListener('click', apriManuale);
+
+  const btnImpostaAdmin = $('#btnImpostaPasswordAdmin');
+  if (btnImpostaAdmin) btnImpostaAdmin.addEventListener('click', async () => {
+    const pw = $('#fNuovaPasswordAdmin').value;
+    if (!pw || pw.length < 4) { alert('Scegli una password di almeno 4 caratteri.'); return; }
+    await adminImpostaPassword(pw);
+    aggiornaAdminBadge();
+    alert('Password impostata: sei ora l\'amministratore del gruppo su questo dispositivo.');
+    render();
+  });
+  const btnAccediAdmin = $('#btnAccediAdmin');
+  if (btnAccediAdmin) btnAccediAdmin.addEventListener('click', async () => {
+    try {
+      await adminAccedi($('#fPasswordAdmin').value);
+      aggiornaAdminBadge();
+      render();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+  const btnEsciAdmin = $('#btnAdminEsci');
+  if (btnEsciAdmin) btnEsciAdmin.addEventListener('click', () => {
+    adminEsci();
+    aggiornaAdminBadge();
+    render();
+  });
+  const btnCambiaPasswordAdmin = $('#btnAdminCambiaPassword');
+  if (btnCambiaPasswordAdmin) btnCambiaPasswordAdmin.addEventListener('click', async () => {
+    const pw = prompt('Nuova password amministratore (almeno 4 caratteri):');
+    if (!pw || pw.length < 4) return;
+    await adminImpostaPassword(pw);
+    alert('Password amministratore aggiornata.');
+  });
+
   const btnCambiaNome = $('#btnCambiaNomeLocale');
   if (btnCambiaNome) {
     btnCambiaNome.addEventListener('click', async () => {

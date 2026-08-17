@@ -1,5 +1,5 @@
 // ============================================================
-// Trekking v1.4 — sync.js
+// Trekking v1.5 — sync.js
 // Copyright (c) 2026 Lazzaro Serva - Centola
 // Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
 // http://www.graficaesiti.it/

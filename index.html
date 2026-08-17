@@ -1,6 +1,6 @@
 <!--
   ============================================================
-  Trekking v1.4.4 — Pianifica con il gruppo
+  Trekking v1.5.0 — Pianifica con il gruppo (DEMO)
   Copyright (c) 2026 Lazzaro Serva - Centola
   Via Tasso, 28 – 84051 CENTOLA (SA) – Italia
   http://www.graficaesiti.it/
@@ -17,7 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org https://*.tile.opentopomap.org https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https://*.tile.opentopomap.org https://trekking-sync.algoritmosoftware.workers.dev https://api.open-meteo.com https://geocoding-api.open-meteo.com;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
-<title>Trekking - Pianifica con il gruppo</title>
+<title>Trekking DEMO - Pianifica con il gruppo</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
@@ -36,7 +36,7 @@
   <div class="splash-icon-wrap">
     <img src="assets/icon-512.png" alt="Trekking" class="splash-icon">
   </div>
-  <div class="splash-title">Trekking</div>
+  <div class="splash-title">Trekking <span class="splash-demo-chip">DEMO</span></div>
   <div class="splash-sub">Pianifica con il gruppo</div>
   <div class="splash-author">
     © 2026 Lazzaro Serva - Centola<br>
@@ -57,7 +57,8 @@
 
 <header id="header">
   <span class="logo">🏔️</span>
-  <div class="title">Trekking<span>Pianifica con il gruppo</span></div>
+  <div class="title">Trekking <span class="demo-chip">DEMO</span><span>Pianifica con il gruppo</span></div>
+  <span id="adminBadge" class="admin-badge hidden">👑 ADMIN</span>
   <button class="hdr-btn" id="helpBtn" aria-label="Manuale d'uso">❓</button>
 </header>
 
@@ -65,6 +66,7 @@
 
 <nav id="bottom-nav">
   <button class="nav-btn active" data-view="percorsi"><span class="ni">🥾</span>Percorsi</button>
+  <button class="nav-btn" data-view="bacheca"><span class="ni">📣</span>Bacheca</button>
   <button class="nav-btn" data-view="attrezzatura"><span class="ni">🎒</span>Attrezzatura</button>
   <button class="nav-btn" data-view="gruppo"><span class="ni">👥</span>Gruppo</button>
   <button class="nav-btn" data-view="impostazioni"><span class="ni">⚙️</span>Impostazioni</button>
@@ -115,12 +117,15 @@
         arrivo, data, durata stimata, difficoltà (scala T/E/EE/EEA), dislivelli
         e quota massima. Questi ultimi due dati alimentano anche la checklist
         intelligente in "Attrezzatura".</p>
-        <p><strong>Importare una traccia GPX</strong> — dalla scheda dell'escursione
-        tocca "📥 Importa GPX" e seleziona un file <code>.gpx</code> esportato da
-        un'altra app (es. app CAI, Komoot, Wikiloc, orologio GPS). L'app legge i
-        punti traccia (<code>trkpt</code>) e calcola automaticamente lunghezza,
-        dislivello positivo/negativo e quota massima, oltre a disegnare il
-        percorso sulla mappa interattiva.</p>
+        <p><strong>Importare una traccia GPX o KML</strong> — dalla scheda
+        dell'escursione tocca "📥 Importa GPX/KML" e seleziona un file
+        <code>.gpx</code> o <code>.kml</code> esportato da un'altra app (es.
+        app CAI, Komoot, Wikiloc, orologio GPS, Google Earth/My Maps). Per il
+        GPX l'app legge i punti traccia (<code>trkpt</code>); per il KML legge
+        le coordinate delle linee (<code>&lt;coordinates&gt;</code>). In
+        entrambi i casi calcola automaticamente lunghezza, dislivello
+        positivo/negativo e quota massima, oltre a disegnare il percorso
+        sulla mappa interattiva.</p>
         <p><strong>Mappa interattiva</strong> — di serie mostra la vista
         <strong>Topografica</strong> (OpenTopoMap), con curve di livello e
         molti sentieri escursionistici già segnati: molto più leggibile in
@@ -200,10 +205,18 @@
         incerto / non può) è modificabile in ogni momento.</p>
         <p><strong>Punto di ritrovo</strong> — luogo e orario, sempre visibili
         anche offline.</p>
-        <p><strong>Bacheca avvisi</strong> — messaggi rapidi per il gruppo
-        (cambio orario, meteo, modifiche percorso). Senza sincronizzazione
-        attiva resta locale sul singolo dispositivo; con la sincronizzazione
-        (vedi sotto) diventa una vera chat condivisa in tempo reale.</p>
+        <p><strong>💬 Chat del gruppo</strong> — aperta a tutti i
+        partecipanti, per messaggi liberi. In questa DEMO resta solo su
+        questo dispositivo: si allinea tra i telefoni del gruppo solo con
+        l'esportazione/importazione dati (vedi "Backup" più sotto), oppure
+        richiedendo la sincronizzazione in tempo reale dedicata (vedi
+        "Sincronizzazione di gruppo").</p>
+        <p><strong>📋 Note per questa escursione</strong> — messaggi rapidi
+        legati a questa specifica uscita (cambio orario, meteo, modifiche
+        percorso). Diverse dalla 💬 Chat: restano nella scheda di questa
+        escursione. Per informazioni generali valide per tutto il gruppo usa
+        invece la sezione 📣 Bacheca (riservata all'amministratore, vedi
+        sotto).</p>
         <p><strong>SOS</strong> — il pulsante "🆘 Invia posizione SOS" richiede
         il permesso di geolocalizzazione al browser, poi apre l'app SMS con un
         messaggio precompilato contenente le coordinate GPS (formato WGS84) e
@@ -224,13 +237,56 @@
       </div>
 
       <div class="help-section">
+        <h3>📣 Bacheca e 👑 Amministratore</h3>
+        <p><strong>📣 Bacheca</strong> (voce di menu separata da Gruppo) —
+        informazioni valide per tutto il gruppo, non legate a una singola
+        escursione: regole, numeri utili, comunicazioni generali. La
+        pubblicazione e la cancellazione degli avvisi sono riservate
+        all'<strong>amministratore</strong>; tutti i partecipanti possono
+        leggerla.</p>
+        <p><strong>🎒 Attrezzatura</strong> segue la stessa regola: spunte,
+        assegnazioni "chi porta cosa" e pesi sono modificabili solo in
+        modalità Amministratore. Senza accesso, la sezione resta visibile
+        in sola lettura.</p>
+        <p><strong>Come diventare amministratore</strong> — in Impostazioni →
+        "👑 Amministratore", chi imposta per primo una password diventa
+        l'unico amministratore del gruppo. Quando la modalità Amministratore
+        è attiva su un dispositivo, compare sempre un badge ben visibile
+        "👑 ADMIN" in alto nell'intestazione dell'app.</p>
+        <p><strong>Password unica e trasferibile</strong> — è prevista una
+        sola password amministratore per gruppo. Non viene mai inviata a
+        nessun server: resta salvata (come impronta crittografica, non in
+        chiaro) sul dispositivo. Per condividerla con un altro dispositivo
+        (es. il telefono di chi guiderà la prossima uscita) usa "⬇️ Esporta
+        dati" e "⬆️ Importa dati" in Impostazioni: la password viaggia
+        insieme a tutti gli altri dati dell'app.</p>
+        <p><strong>🗄️ Archiviazione escursioni</strong> — nella sezione
+        Percorsi, la scheda "🗄️ Archivia" sposta un'escursione conclusa
+        fuori dall'elenco Attive, mantenendo percorso, gruppo ed
+        equipaggiamento. Dalla scheda Archiviate puoi "↩️ Ripristinarla" tra
+        le attive oppure "🗑️ Eliminarla definitivamente" (operazione non
+        reversibile, cancella anche i dati collegati).</p>
+      </div>
+
+      <div class="help-section">
         <h3>🔄 Sincronizzazione di gruppo (chat, posizione live, notifiche)</h3>
+        <p><strong>Disattivata di default in questa versione DEMO:</strong>
+        percorsi, bacheca, chat e attrezzatura restano sempre e solo sul
+        dispositivo in uso. Una sincronizzazione in tempo reale dedicata a
+        un gruppo specifico (chat live, posizione condivisa, notifiche
+        push) può essere attivata solo su una copia dell'app predisposta
+        appositamente: va richiesta esplicitamente all'autore
+        (<a href="http://www.graficaesiti.it/" target="_blank" rel="noopener">www.graficaesiti.it</a>).</p>
+        <p>Il resto di questa sezione descrive come funziona la
+        sincronizzazione quando è stata attivata su una copia dedicata: se
+        stai usando la DEMO, questa parte non si applica finché non la
+        richiedi.</p>
         <p>Funzione facoltativa che collega i dispositivi dei partecipanti a
-        un Worker Cloudflare, per condividere in tempo reale ciò che in
-        V1.0-1.2 restava solo locale. È disponibile solo se chi ha
-        pubblicato l'app ha distribuito il Worker (vedi
+        un Worker Cloudflare, per condividere in tempo reale ciò che nella
+        DEMO resta solo locale. È disponibile solo se chi ha pubblicato
+        l'app ha distribuito il Worker (vedi
         <code>/trekking-sync-worker</code>) e configurato <code>config.js</code>;
-        altrimenti la sezione Gruppo funziona come prima, tutta offline.</p>
+        altrimenti la sezione Gruppo funziona come nella DEMO, tutta offline.</p>
         <p><strong>Attivazione</strong> — dalla sezione Gruppo, tocca "🔄
         Attiva sincronizzazione": la prima volta ti verrà chiesto un nome con
         cui farti riconoscere, poi verrà generato un codice gruppo di 6
@@ -302,12 +358,22 @@
       </div>
 
       <div class="help-section">
-        <h3>💾 Backup ed esportazione</h3>
-        <p>"⬇️ Esporta dati" salva un file <code>.json</code> con tutte le tue
-        escursioni, partecipanti, equipaggiamento e bacheca: utile come backup
-        prima di cambiare dispositivo o svuotare la cache del browser.
-        "⬆️ Importa dati" carica un file esportato in precedenza, anch'esso in
-        modalità append (stesso comportamento della demo).</p>
+        <h3>💾 Backup, esportazione e passaggio tra due device</h3>
+        <p>"⬇️ Esporta dati" salva un file <code>.json</code> con tutti i tuoi
+        dati: escursioni, partecipanti, equipaggiamento, note per escursione,
+        punti d'interesse, 📣 Bacheca globale, 💬 Chat del gruppo e la
+        password amministratore (come impronta crittografica). È lo
+        strumento sia per il backup sia, in assenza di sincronizzazione
+        automatica, per <strong>allineare due dispositivi</strong>: esporta
+        dal primo telefono e importa il file sul secondo (es. via email,
+        WhatsApp o cavo) per portarsi dietro l'intero gruppo, comprese
+        bacheca, chat e amministratore.</p>
+        <p>"⬆️ Importa dati" carica un file esportato in precedenza, in
+        modalità append per la maggior parte dei dati (stesso comportamento
+        della demo): non cancella ciò che hai già, aggiunge quello nuovo.
+        Fa eccezione l'amministratore, che è unico per gruppo: importando un
+        file che contiene una password amministratore, questa sostituisce
+        quella eventualmente già presente sul device di arrivo.</p>
       </div>
 
       <div class="help-section">
@@ -341,10 +407,12 @@
 
       <div class="help-section">
         <h3>❓ Domande frequenti</h3>
-        <p><strong>Il file GPX non importa nulla di visibile.</strong> Verifica
-        che contenga punti <code>trkpt</code> con coordinate valide; alcuni
-        file esportati come "solo waypoint" non contengono una traccia
-        continua.</p>
+        <p><strong>Il file GPX o KML non importa nulla di visibile.</strong>
+        Per il GPX verifica che contenga punti <code>trkpt</code> con
+        coordinate valide (alcuni file esportati come "solo waypoint" non
+        contengono una traccia continua); per il KML verifica che contenga
+        almeno un nodo <code>&lt;coordinates&gt;</code> con una sequenza di
+        punti (una traccia composta da un solo punto/Placemark non basta).</p>
         <p><strong>Ho cancellato la cache e ho perso le mie escursioni.</strong>
         Se avevi fatto un'esportazione JSON puoi ripristinarla da Impostazioni
         → "Importa dati". Ricorda di esportare periodicamente come backup.</p>
@@ -364,24 +432,27 @@
 
       <div class="help-section">
         <h3>🔒 Privacy e protezione dei dati</h3>
-        <p><strong>Per impostazione predefinita tutti i dati inseriti vengono
+        <p><strong>In questa versione DEMO tutti i dati inseriti vengono
         salvati esclusivamente su questo dispositivo</strong> (IndexedDB e
-        Cache API del browser). Nessuna informazione viene trasmessa a
-        server esterni, salvo quanto descritto qui sotto.</p>
+        Cache API del browser). Nessuna informazione — inclusi bacheca,
+        chat e password amministratore — viene trasmessa a server esterni,
+        salvo quanto descritto qui sotto.</p>
         <ul>
-          <li><strong>Nessun account, nessun login</strong>, nemmeno con la sincronizzazione attiva.</li>
+          <li><strong>Nessun account, nessun login</strong> centralizzato: l'amministratore è una password locale, verificata solo sul dispositivo.</li>
+          <li><strong>Password amministratore</strong> — non è mai salvata in chiaro: viene trasformata con una funzione crittografica (SHA-256) prima del salvataggio locale. Viaggia verso un altro dispositivo solo se scegli tu di includerla in un'esportazione dati.</li>
           <li><strong>Nessuna connessione a server</strong> per impostazione predefinita — funziona completamente offline (a parte le tile mappa e l'eventuale invio SMS).</li>
           <li><strong>Meteo automatico</strong> — quando lo richiedi esplicitamente, il nome del luogo di partenza (o le coordinate della traccia GPX) viene inviato al servizio gratuito Open-Meteo (geocoding-api.open-meteo.com e api.open-meteo.com) per ottenere le previsioni. Nessun altro dato dell'app viene condiviso con questo servizio.</li>
-          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS, o la casella "condividi posizione" quando la sincronizzazione è attiva), mai salvata né trasmessa al di fuori di questi due casi.</li>
-          <li><strong>Sincronizzazione di gruppo (facoltativa)</strong> — se attivata dalla sezione Gruppo, i messaggi della chat, la posizione GPS live e la registrazione per le notifiche push vengono inviati al Worker Cloudflare indicato in configurazione e restano leggibili a chiunque conosca il codice gruppo, per un periodo limitato (messaggi 14 giorni, posizioni 4 ore). Resta disattivata finché non la attivi tu, escursione per escursione.</li>
-          <li>Cancellare la cache del browser rimuove anche tutti i dati dell'app: usa "Esporta dati" prima di farlo.</li>
+          <li><strong>Posizione GPS</strong> — usata solo su richiesta esplicita (pulsante SOS), mai salvata né trasmessa al di fuori di questo caso, nella DEMO.</li>
+          <li><strong>Sincronizzazione di gruppo</strong> — disattivata di default in questa DEMO. Se in futuro richiedi e attivi una copia dedicata al tuo gruppo, i messaggi della chat, la posizione GPS live e la registrazione per le notifiche push verrebbero inviati al Worker Cloudflare indicato in configurazione e resterebbero leggibili a chiunque conosca il codice gruppo, per un periodo limitato (messaggi 14 giorni, posizioni 4 ore).</li>
+          <li>Cancellare la cache del browser rimuove anche tutti i dati dell'app, amministratore incluso: usa "Esporta dati" prima di farlo.</li>
         </ul>
         <p style="font-size:14px;color:var(--text2);">
-          In assenza di sincronizzazione attiva, questa app è conforme al Regolamento UE
-          2016/679 (GDPR) in quanto non tratta dati personali al di fuori del dispositivo
-          dell'utente. Attivando la sincronizzazione di gruppo, alcuni dati (messaggi,
-          posizione GPS, subscription notifiche) vengono trattati dal Worker indicato da
-          chi ha distribuito questa installazione dell'app.<br/>
+          In questa versione DEMO, senza sincronizzazione attiva, l'app è conforme al
+          Regolamento UE 2016/679 (GDPR) in quanto non tratta dati personali al di fuori
+          del dispositivo dell'utente. Attivando in futuro una sincronizzazione di gruppo
+          dedicata, alcuni dati (messaggi, posizione GPS, subscription notifiche)
+          verrebbero trattati dal Worker indicato da chi ha distribuito quella copia
+          dell'app.<br/>
           Titolare: <strong>Lazzaro Serva</strong> · Via Tasso 28 · 84051 Centola (SA) ·
           <a href="http://www.graficaesiti.it" target="_blank" rel="noopener">www.graficaesiti.it</a>
         </p>

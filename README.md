@@ -1,13 +1,20 @@
-# Trekking — Pianifica con il gruppo
+# Trekking DEMO — Pianifica con il gruppo
 
 PWA offline-first per la pianificazione di escursioni di gruppo tra amici:
-percorsi e itinerari, attrezzatura, equipaggiamento condiviso, gestione
-gruppo e sicurezza — con sincronizzazione di gruppo facoltativa (chat,
-posizione live, notifiche push) tramite un Worker Cloudflare separato.
+percorsi e itinerari, attrezzatura (gestita dall'amministratore), bacheca
+del gruppo, chat locale, gestione partecipanti e sicurezza, archiviazione
+delle uscite concluse.
+
+**Versione DEMO**: tutti i dati restano sul dispositivo in uso, nessuna
+sincronizzazione automatica tra i telefoni del gruppo. Il codice per una
+sincronizzazione di gruppo in tempo reale (chat live, posizione condivisa,
+notifiche push) è già pronto in `sync.js` e nel Worker separato
+`/trekking-sync-worker`, ma va attivato solo su una copia dell'app dedicata
+a un gruppo specifico, su richiesta esplicita all'autore.
 
 | | |
 |---|---|
-| **Versione** | 1.4 |
+| **Versione** | 1.5.0 (DEMO) |
 | **Autore** | Lazzaro Serva — [graficaesiti.it](http://www.graficaesiti.it/) |
 | **Licenza** | Privata — Tutti i diritti riservati |
 | **Tecnologie** | HTML5, CSS3, JavaScript vanilla, IndexedDB, Service Worker, Leaflet |

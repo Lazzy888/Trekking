@@ -1,5 +1,44 @@
 Trekking — Changelog
 
+v1.5.0 — agosto 2026 (DEMO)
+- Import traccia esteso da solo GPX a **GPX o KML**: il pulsante "📥
+  Importa GPX/KML" ora riconosce anche i file <code>.kml</code>
+  (es. esportati da Google Earth/My Maps), leggendo i nodi
+  <code>&lt;coordinates&gt;</code> di uno o più Placemark/LineString e
+  concatenandoli in un'unica traccia, con lo stesso calcolo automatico
+  di lunghezza/dislivelli/quota già usato per il GPX.
+- Dichiarata esplicitamente "PWA DEMO": SYNC_ENABLED riportato a false di
+  default (era true dalla v1.3), nuovo flag DEMO_MODE in config.js. Tutti
+  i dati restano sul dispositivo finché non si richiede espressamente
+  all'autore una copia dedicata con sincronizzazione attiva per un gruppo
+  specifico. Badge "DEMO" visibile in header e nello splash screen.
+- Nuova sezione "📣 Bacheca" (voce di menu separata, non legata a una
+  singola escursione): informazioni generali per tutto il gruppo,
+  pubblicazione riservata all'amministratore, lettura aperta a tutti.
+  Nuovo store IndexedDB "bachecaGlobale".
+- Nuova "💬 Chat del gruppo" nella sezione Gruppo: locale, aperta a
+  tutti i partecipanti (a differenza della Bacheca). Nuovo store
+  IndexedDB "chatGlobale". La vecchia "Bacheca avvisi" per singola
+  escursione è stata rinominata "📋 Note per questa escursione" per
+  evitare confusione con la nuova Bacheca globale.
+- Amministratore unico con password: nuova sezione "👑 Amministratore"
+  in Impostazioni. Password con hash SHA-256 + salt (mai salvata in
+  chiaro), nuovo store IndexedDB "admin". Attiva/disattiva la modalità
+  Amministratore con badge "👑 ADMIN" ben visibile in header quando
+  attiva. Bacheca e Attrezzatura sono in sola lettura per chi non è
+  amministratore.
+- 🗄️ Archiviazione escursioni: nuova scheda "Attive"/"Archiviate" nella
+  sezione Percorsi. Un'escursione archiviata resta con tutti i suoi
+  dati e può essere ripristinata o eliminata definitivamente (con
+  cancellazione a cascata di gruppo, equipaggiamento, waypoint e note
+  collegati).
+- Passaggio dati tra due device: "⬇️ Esporta dati"/"⬆️ Importa dati" ora
+  includono anche Bacheca globale, Chat del gruppo e la password
+  amministratore (che è unica per gruppo: un'importazione la sostituisce
+  su quella eventualmente già presente sul device di arrivo).
+- storage.js: DB_VERSION 2 → 3 (nuovi store bachecaGlobale, chatGlobale,
+  admin). Manuale d'uso, manifest.json e CACHE_NAME aggiornati.
+
 v1.4.4 — agosto 2026
 - Corretto un altro caso della stessa famiglia di bug CSP: img-src (e
   connect-src) autorizzavano solo il dominio esatto "tile.openstreetmap.org",
